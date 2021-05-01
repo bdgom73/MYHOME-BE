@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
 import javax.security.auth.login.LoginException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -53,16 +54,20 @@ public class MemberController {
         }
     }
 
-    @GetMapping("/authorization?sessionUID= :session_uid")
+    @GetMapping("/authorization")
     public Object authorization(
-            @PathVariable(name = "session_uid") String UID,
-            HttpServletResponse httpServletResponse
+            @RequestHeader("Authorization") String UID,
+            HttpServletResponse httpServletResponse,
+            HttpServletRequest httpServletRequest
     ) throws IOException {
         try{
+            System.out.println("UID = " + UID);
+            String authorization = httpServletRequest.getHeader("Authorization");
+            System.out.println("authorization = " + authorization);
             return memberService.LoginAuthentication(UID);
         }catch (AuthenticationException ae){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"데이터 유효성 검사에 실패했습니다.");
-            return false;
+            return null;
         }
     }
 
