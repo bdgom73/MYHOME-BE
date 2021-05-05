@@ -10,6 +10,7 @@ import org.springframework.test.annotation.Rollback;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -39,7 +40,6 @@ class MemberTest {
         member.setSESSION_UID(bcrypt.createSessionUid(member.getId()));
         em.flush();
         em.clear();
-
         MemberDetail memberDetail = em.find(MemberDetail.class, member.getId());
         System.out.println("memberDetail = " + memberDetail.getSESSION_UID());
     }
