@@ -12,11 +12,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface CalendarRepository extends JpaRepository<Calendar,Long> {
+public interface CalendarRangeRepository extends JpaRepository<CalendarRange,Long> {
 
-    List<Calendar> findByMember(Member member);
+    List<CalendarRange> findByMember(Member member);
 
-    @Query("select c from Calendar c where c.member = :member and c.start_date between :startDate and :endDate")
-    List<Calendar> findDateRangeByMember(
-            @Param("member") Member member , @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    @Query("select c from CalendarRange c where c.member = :member and c.start_date between :startDate and :endDate")
+    List<CalendarRange> findDateRangeByMember(
+            @Param("member") Member member ,@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate);
 }

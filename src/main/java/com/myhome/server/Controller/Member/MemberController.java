@@ -61,9 +61,6 @@ public class MemberController {
             HttpServletRequest httpServletRequest
     ) throws IOException {
         try{
-            System.out.println("UID = " + UID);
-            String authorization = httpServletRequest.getHeader("Authorization");
-            System.out.println("authorization = " + authorization);
             return memberService.LoginAuthentication(UID);
         }catch (AuthenticationException ae){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"데이터 유효성 검사에 실패했습니다.");

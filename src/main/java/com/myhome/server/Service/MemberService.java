@@ -73,7 +73,6 @@ public class MemberService {
         *   로그인 정보 확인
         *  로그인 정보 리턴
         *  null or 정보 */
-        System.out.println("sessionUID = " + sessionUID);
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(sessionUID);
         if(findMember.isEmpty()){
             throw new AuthenticationException("올바르지 않은 형식의 토큰입니다.");
