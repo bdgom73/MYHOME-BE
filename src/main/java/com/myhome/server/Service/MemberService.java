@@ -5,6 +5,7 @@ import com.myhome.server.DTO.AuthenticationDataDTO;
 import com.myhome.server.DTO.RegisterDTO;
 import com.myhome.server.Entity.Member.MemberDetail;
 import com.myhome.server.Repository.Member.MemberDetailRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +22,7 @@ public class MemberService {
 
     private MemberDetailRepository memberDetailRepository;
     private Bcrypt bcrypt;
-
+    BCryptPasswordEncoder pass = new BCryptPasswordEncoder();
     public MemberService(MemberDetailRepository memberDetailRepository, Bcrypt bcrypt) {
         this.memberDetailRepository = memberDetailRepository;
         this.bcrypt = bcrypt;
@@ -35,9 +36,9 @@ public class MemberService {
         if(findMember.isEmpty()){
             throw new LoginException("존재하지 않는 계정입니다.");
         }
-        MemberDetail member = findMember.get();
+        MemberDetail member = findMember.get();;
         String pw = member.getPassword();
-        if(bcrypt.matchesPassword(password,pw)){
+        if(!bcrypt.matchesPassword(password,pw)){
             throw new LoginException("비밀번호가 틀립니다.");
         }
 
@@ -59,13 +60,19 @@ public class MemberService {
         }
 
         MemberDetail member = new MemberDetail();
-            member.setName(registerDTO.getName());
-            member.setEmail(registerDTO.getEmail());
-            member.setCreated(LocalDateTime.now());
-            member.setUpdated(LocalDateTime.now());
+        member.setName(registerDTO.getName());
+        member.setEmail(registerDTO.getEmail());
+        member.setPassword(bcrypt.passwordEncoder(registerDTO.getPassword()));
+        member.setCreated(LocalDateTime.now());
+        member.setUpdated(LocalDateTime.now());
+        member.setAddress(registerDTO.getAddress());
+        member.setZipcode(registerDTO.getZipcode());
+        member.setDetail_address(registerDTO.getDetail_address());
+
         MemberDetail savedMember = memberDetailRepository.save(member);
-            String sessionUid = bcrypt.createSessionUid(savedMember.getId());
-            savedMember.setSESSION_UID(sessionUid);
+        String sessionUid = bcrypt.createSessionUid(savedMember.getId());
+        savedMember.setSESSION_UID(sessionUid);
+        memberDetailRepository.save(savedMember);
     }
 
     public AuthenticationDataDTO LoginAuthentication(String sessionUID) throws AuthenticationException {

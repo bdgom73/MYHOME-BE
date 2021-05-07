@@ -11,7 +11,7 @@ public class Bcrypt {
     BCryptPasswordEncoder pass = new BCryptPasswordEncoder();
 
     public String passwordEncoder(String password){
-        return pass.encode(password);
+     return pass.encode(password);
     }
 
     public Boolean matchesPassword(String password, String hashedPassword){
@@ -19,6 +19,7 @@ public class Bcrypt {
     }
 
     public String createSessionUid(Long id){
+
         return pass.encode(id.toString());
     }
 

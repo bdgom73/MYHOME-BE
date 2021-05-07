@@ -16,7 +16,7 @@ public interface CalendarRepository extends JpaRepository<Calendar,Long> {
 
     List<Calendar> findByMember(Member member);
 
-    @Query("select c from Calendar c where c.member = :member and c.start_date between :startDate and :endDate")
+    @Query("select c from Calendar c where c.member = :member and c.date between :startDate and :endDate")
     List<Calendar> findDateRangeByMember(
             @Param("member") Member member , @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

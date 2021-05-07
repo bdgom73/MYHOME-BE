@@ -17,6 +17,7 @@ public class CalendarRange {
 
     @Column(name = "start_date")
     private LocalDate start_date;
+    @Column(name = "end_date")
     private LocalDate end_date;
     private String title;
     private String content;

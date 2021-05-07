@@ -32,7 +32,7 @@ public class CalendarService {
         calendar.setDate(calendarDTO.getDate());
         calendarRepository.save(calendar);
     }
-    public void addSchedule(CalendarRangeDTO calendarRangeDTO){
+    public void addRangeSchedule(CalendarRangeDTO calendarRangeDTO){
         CalendarRange calendarRange = new CalendarRange();
         calendarRange.setTitle(calendarRangeDTO.getTitle());
         calendarRange.setContent(calendarRangeDTO.getContent());
@@ -67,7 +67,7 @@ public class CalendarService {
         calendar.setTitle(calendarDTO.getTitle());
         calendar.setContent(calendarDTO.getContent());
     }
-    public void updateSchedule(Long calendar_id, CalendarRangeDTO calendarRangeDTO) throws SQLDataException {
+    public void updateRangeSchedule(Long calendar_id, CalendarRangeDTO calendarRangeDTO) throws SQLDataException {
         Optional<CalendarRange> findSchedule = calendarRangeRepository.findById(calendar_id);
         if(findSchedule.isEmpty()) {
             throw new SQLDataException("존재하지 않는 일정입니다.");

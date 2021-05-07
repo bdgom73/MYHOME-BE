@@ -55,9 +55,12 @@ class MemberTest {
         em.persist(member);
         member.setSESSION_UID(bcrypt.createSessionUid(member.getId()));
 
+        String a = "$2a$10$B6uIVFiSRSXHPII4748GBOzC.ZuVKYizJwsqYw75k6RfjVDQ0XFCC";
         Optional<MemberDetail> bySessionUID = memberDetailRepository.findBySessionUID(member.getSESSION_UID());
         MemberDetail memberDetail = bySessionUID.get();
         String email = memberDetail.getEmail();
         System.out.println("email = " + email);
+        Boolean aBoolean = bcrypt.matchesPassword("1111", a);
+        System.out.println("aBoolean = " + aBoolean);
     }
 }

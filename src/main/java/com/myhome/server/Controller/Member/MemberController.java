@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Controller
+@RestController
 @RequestMapping("/member")
 public class MemberController {
 
@@ -32,6 +32,7 @@ public class MemberController {
             @RequestParam(name = "detail_address") String detail_address,
             HttpServletResponse httpServletResponse
     ) throws IOException {
+        System.out.println("password + \" \"+ password2 = " + password + " "+ password2);
         RegisterDTO registerDTO = new RegisterDTO(name, email, password, password2, zipcode, address, detail_address);
         try{
             memberService.SignUp(registerDTO);
@@ -47,11 +48,12 @@ public class MemberController {
         HttpServletResponse httpServletResponse
     ) throws IOException {
         try{
-            return memberService.Login(email, password);
+            String login = memberService.Login(email, password);
+            return login;
         } catch (LoginException e){
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            return null;
         }
+        return null;
     }
 
     @GetMapping("/authorization")
@@ -64,8 +66,9 @@ public class MemberController {
             return memberService.LoginAuthentication(UID);
         }catch (AuthenticationException ae){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"데이터 유효성 검사에 실패했습니다.");
-            return null;
+
         }
+        return null;
     }
 
 
