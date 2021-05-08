@@ -59,14 +59,12 @@ public class MemberController {
     @GetMapping("/authorization")
     public Object authorization(
             @RequestHeader("Authorization") String UID,
-            HttpServletResponse httpServletResponse,
-            HttpServletRequest httpServletRequest
+            HttpServletResponse httpServletResponse
     ) throws IOException {
         try{
             return memberService.LoginAuthentication(UID);
         }catch (AuthenticationException ae){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"데이터 유효성 검사에 실패했습니다.");
-
         }
         return null;
     }

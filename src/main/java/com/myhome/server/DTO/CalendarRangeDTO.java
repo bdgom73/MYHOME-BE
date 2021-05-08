@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 public class CalendarRangeDTO {
 
+    private Long id;
     private String title;
     private String content;
     private Member member;

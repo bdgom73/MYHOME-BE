@@ -1,5 +1,7 @@
 package com.myhome.server.Controller.Board;
 
+import com.myhome.server.DTO.CalendarDTO;
+import com.myhome.server.DTO.CalendarRangeDTO;
 import com.myhome.server.Entity.Board.Calendar;
 import com.myhome.server.Entity.Board.CalendarRange;
 import com.myhome.server.Entity.Member.Member;
@@ -12,12 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.sql.SQLDataException;
 import java.time.LocalDate;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
-@Controller
+@RestController
 @RequestMapping("/calendar")
 public class CalendarController {
 
@@ -33,14 +37,45 @@ public class CalendarController {
     }
 
     @GetMapping("/schedule")
-    public void sendScheduleData(
+    public HashMap<String, Object> sendScheduleData(
             @RequestHeader("Authorization") String UID,
+            @PathParam("start_date") String start_date,
+            @PathParam("end_date") String end_date,
             HttpServletResponse httpServletResponse
     ) throws IOException {
+        System.out.println(start_date);
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
         if(findMember.isEmpty()){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"존재하지 않는 회원입니다.");
         }
+        MemberDetail member = findMember.get();
+
+        List<CalendarRange> findCalendarRange = calendarRangeRepository.findDateRangeByMember(member, LocalDate.parse(start_date) , LocalDate.parse(end_date));
+        List<Calendar> findCalendar = calendarRepository.findDateRangeByMember(member, LocalDate.parse(start_date) , LocalDate.parse(end_date));
+        ArrayList<CalendarRangeDTO> cr = new ArrayList<>();
+        for (CalendarRange calendarRange : findCalendarRange) {
+            CalendarRangeDTO crd = new CalendarRangeDTO();
+            crd.setId(calendarRange.getId());
+            crd.setContent(calendarRange.getContent());
+            crd.setEnd_date(calendarRange.getEnd_date());
+            crd.setStart_date(calendarRange.getStart_date());
+            crd.setTitle(calendarRange.getTitle());
+            cr.add(crd);
+        }
+        ArrayList<CalendarDTO> c = new ArrayList<>();
+        for (Calendar calendar : findCalendar) {
+            CalendarDTO cd = new CalendarDTO();
+            cd.setId(calendar.getId());
+            cd.setContent(calendar.getContent());
+            cd.setDate(calendar.getDate());
+            cd.setTitle(calendar.getTitle());
+            c.add(cd);
+        }
+        HashMap<String, Object> value = new HashMap<>();
+        value.put("range", cr);
+        value.put("single", c);
+        return value;
+
     }
 
     @PostMapping("/add")
@@ -77,11 +112,11 @@ public class CalendarController {
         }
     }
 
-    @DeleteMapping("/delete?type={type}&cid={cid}")
+    @DeleteMapping("/delete")
     public void deleteSchedule(
             @RequestHeader("Authorization") String UID,
-            @RequestParam("type") String type,
-            @RequestParam("cid") Long cid,
+            @PathParam("type") String type,
+            @PathParam("cid") Long cid,
             HttpServletResponse httpServletResponse
     ) throws IOException, SQLDataException {
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
@@ -95,10 +130,10 @@ public class CalendarController {
 
     }
 
-    @PutMapping("/update?type={type}")
+    @PutMapping("/update")
     public void updateSchedule(
             @RequestHeader("Authorization") String UID,
-            @RequestParam("type") String type,
+            @PathParam("type") String type,
             @RequestParam("cid") Long cid,
             @RequestParam(name = "title") String title,
             @RequestParam(name = "content") String content,

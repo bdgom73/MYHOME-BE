@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Data
 public class CalendarDTO {
 
+    private Long id;
     private String title;
     private String content;
     private Member member;
