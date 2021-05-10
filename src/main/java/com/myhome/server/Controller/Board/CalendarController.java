@@ -83,9 +83,9 @@ public class CalendarController {
             @RequestHeader("Authorization") String UID,
             @RequestParam(name = "title") String title,
             @RequestParam(name = "content") String content,
-            @RequestParam(name = "date", required = false ) LocalDate date,
-            @RequestParam(name = "start_date", required = false ) LocalDate start_date,
-            @RequestParam(name = "end_date",required = false ) LocalDate end_date,
+            @RequestParam(name = "date", required = false ) String date,
+            @RequestParam(name = "start_date", required = false ) String start_date,
+            @RequestParam(name = "end_date",required = false ) String end_date,
             HttpServletResponse httpServletResponse
     ) throws IOException {
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
@@ -94,19 +94,19 @@ public class CalendarController {
         }
         Member member = findMember.get();
 
-        if(date.toString().isEmpty()){
+        if(date == null){
             CalendarRange calendar = new CalendarRange();
             calendar.setTitle(title);
             calendar.setContent(content);
-            calendar.setStart_date(start_date);
-            calendar.setEnd_date(end_date);
+            calendar.setStart_date(LocalDate.parse(start_date));
+            calendar.setEnd_date(LocalDate.parse(end_date));
             calendar.setMember(member);
             calendarRangeRepository.save(calendar);
         }else{
             Calendar calendar = new Calendar();
             calendar.setTitle(title);
             calendar.setContent(content);
-            calendar.setDate(date);
+            calendar.setDate(LocalDate.parse(date));
             calendar.setMember(member);
             calendarRepository.save(calendar);
         }
