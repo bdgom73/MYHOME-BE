@@ -137,9 +137,9 @@ public class CalendarController {
             @RequestParam("cid") Long cid,
             @RequestParam(name = "title") String title,
             @RequestParam(name = "content") String content,
-            @RequestParam(name = "date", required = false ) LocalDate date,
-            @RequestParam(name = "start_date", required = false ) LocalDate start_date,
-            @RequestParam(name = "end_date",required = false ) LocalDate end_date,
+            @RequestParam(name = "date", required = false ) String date,
+            @RequestParam(name = "start_date", required = false ) String start_date,
+            @RequestParam(name = "end_date",required = false ) String end_date,
             HttpServletResponse httpServletResponse
     ) throws IOException, SQLDataException {
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
@@ -152,15 +152,17 @@ public class CalendarController {
             CalendarRange calendarRange = findCalendar.get();
             calendarRange.setContent(content);
             calendarRange.setTitle(title);
-            if(!start_date.toString().isEmpty()) calendarRange.setStart_date(start_date);
-            if(!end_date.toString().isEmpty()) calendarRange.setEnd_date(end_date);
+            if(!start_date.isEmpty()) calendarRange.setStart_date(LocalDate.parse(start_date));
+            if(!end_date.isEmpty()) calendarRange.setEnd_date(LocalDate.parse(end_date));
+            calendarRangeRepository.save(calendarRange);
         }else{
             Optional<Calendar> findCalendar = calendarRepository.findById(cid);
             if(findCalendar.isEmpty()) throw new SQLDataException("일정이 존재하지 않습니다");
             Calendar calendar = findCalendar.get();
             calendar.setContent(content);
             calendar.setTitle(title);
-            if(!date.toString().isEmpty()) calendar.setDate(start_date);
+            if(!date.isEmpty()) calendar.setDate(LocalDate.parse(date));
+            calendarRepository.save(calendar);
         }
     }
 }
