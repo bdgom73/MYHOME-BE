@@ -94,23 +94,6 @@ public class MemberService {
         return authData;
     }
 
-    public void saveFile(MultipartFile file){
-        /* TODO
-        *   파일 저장*/
-        String SAVE_PATH="/"; // 실제 저장위치.
-        String PATH = "/avatars/"; // 이미지 url 가져오는 위치
-        String originalFileName = file.getOriginalFilename();
-        String safeFile = SAVE_PATH + System.currentTimeMillis() + originalFileName;
-        String dbFile = PATH + System.currentTimeMillis() + originalFileName;
-        try {
-            file.transferTo(new File(safeFile));
-        }
-        catch (IllegalStateException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 
 }
