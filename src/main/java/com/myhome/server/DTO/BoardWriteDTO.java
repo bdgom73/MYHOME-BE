@@ -17,10 +17,9 @@ public class BoardWriteDTO {
 
     private String title;
     private String description;
-    private String memberUUID;
     private CategoryList categoryList;
     private String video_url;
     private VideoType videoType;
 
-    private List<String> imageList = new ArrayList<>();
+    private List<ImageDTO> imageList = new ArrayList<>();
 }

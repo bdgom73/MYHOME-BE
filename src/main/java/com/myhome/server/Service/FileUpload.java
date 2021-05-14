@@ -1,7 +1,6 @@
 package com.myhome.server.Service;
 
 import lombok.NoArgsConstructor;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -12,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 @NoArgsConstructor
 public class FileUpload {
@@ -20,13 +20,13 @@ public class FileUpload {
     private String PATHNAME = "/board/image/";
     private final String ABSOLUTE_PATH = CLASSPATH+PATHNAME;
 
-    public HashMap<String,String> Save(MultipartFile file){
+    public Map<String,String> Save(MultipartFile file){
         String originalFileName = file.getOriginalFilename();
         String safe_pathname = (ABSOLUTE_PATH + System.currentTimeMillis() + originalFileName).trim();
         String save_pathname = (PATHNAME + System.currentTimeMillis() + originalFileName).trim();
         try {
             file.transferTo(new File(safe_pathname));
-            HashMap<String,String> value = new HashMap<>();
+            Map<String,String> value = new HashMap<>();
             value.put("ABSOLUTE_PATH",safe_pathname);
             value.put("PATH",save_pathname);
             return value;
@@ -36,7 +36,7 @@ public class FileUpload {
         return null;
     }
 
-    public byte[] fetch(String url){
+    public ByteArrayInputStream fetch(String url){
         Image image = new ImageIcon(url).getImage();
 
         BufferedImage bi = new BufferedImage(image.getWidth(null),image.getHeight(null),BufferedImage.TYPE_INT_ARGB);
@@ -57,8 +57,8 @@ public class FileUpload {
             }
         }
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        byte[] encodeImg = Base64.encodeBase64(bais.readAllBytes());
-        return encodeImg;
+        return bais;
+//        return Base64.encodeBase64(bais.readAllBytes());
     }
 
     public void setPATHNAME(String PATHNAME) {

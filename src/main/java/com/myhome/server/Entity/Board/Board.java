@@ -22,7 +22,6 @@ public class Board {
     @Column(columnDefinition = "Text")
     private String description;
     private int views;
-    private int recommend;
     private LocalDateTime created;
     private LocalDateTime updated;
 
@@ -36,4 +35,5 @@ public class Board {
 
     @OneToMany(mappedBy = "board")
     private List<Image> imageList = new ArrayList<>();
+
 }

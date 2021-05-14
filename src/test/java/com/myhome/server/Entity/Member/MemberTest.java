@@ -1,15 +1,24 @@
 package com.myhome.server.Entity.Member;
 
 import com.myhome.server.Crypt.Bcrypt;
+import com.myhome.server.Entity.Board.Board;
+import com.myhome.server.Entity.Board.CategoryList;
+import com.myhome.server.Repository.Board.BoardRepository;
 import com.myhome.server.Repository.Member.MemberDetailRepository;
+import com.myhome.server.Service.FileUpload;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,6 +36,8 @@ class MemberTest {
     Bcrypt bcrypt;
     @Autowired
     MemberDetailRepository memberDetailRepository;
+    @Autowired
+    BoardRepository boardRepository;
 
     @Test
     public void MemberTest(){
@@ -62,5 +73,14 @@ class MemberTest {
         System.out.println("email = " + email);
         Boolean aBoolean = bcrypt.matchesPassword("1111", a);
         System.out.println("aBoolean = " + aBoolean);
+    }
+
+    @Test
+    public void BoardTest(){
+        FileUpload fileUpload = new FileUpload();
+
+        ByteArrayInputStream fetch = fileUpload.fetch("E:/download/img.jpg");
+        System.out.println("data:Image/png;base64," + fetch.readAllBytes());
+
     }
 }

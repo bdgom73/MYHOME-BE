@@ -43,7 +43,7 @@ public class CalendarController {
             @PathParam("end_date") String end_date,
             HttpServletResponse httpServletResponse
     ) throws IOException {
-        System.out.println(start_date);
+
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
         if(findMember.isEmpty()){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"존재하지 않는 회원입니다.");

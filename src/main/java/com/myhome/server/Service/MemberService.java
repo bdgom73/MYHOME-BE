@@ -7,11 +7,10 @@ import com.myhome.server.Entity.Member.MemberDetail;
 import com.myhome.server.Repository.Member.MemberDetailRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.AuthenticationException;
 import javax.security.auth.login.LoginException;
-import java.io.File;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLDataException;
 import java.time.LocalDateTime;
@@ -94,6 +93,13 @@ public class MemberService {
         return authData;
     }
 
-
+    public MemberDetail LoginCheck(String UID, HttpServletResponse httpServletResponse) throws IOException {
+        Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
+        if(findMember.isEmpty()){
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"존재하지 않는 회원입니다.");
+        }
+        MemberDetail member = findMember.get();
+        return member;
+    }
 
 }

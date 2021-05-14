@@ -13,6 +13,7 @@ public class Image {
     @Column(name = "image_id")
     private Long id;
     private String image_url;
+    private String original_url;
 
     @ManyToOne
     @JoinColumn(name = "board_id")
@@ -29,5 +30,9 @@ public class Image {
 
     public void setImage_url(String image_url) {
         this.image_url = image_url;
+    }
+
+    public void setOriginal_url(String original_url) {
+        this.original_url = original_url;
     }
 }
