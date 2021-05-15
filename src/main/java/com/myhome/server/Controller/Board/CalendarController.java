@@ -48,33 +48,36 @@ public class CalendarController {
         if(findMember.isEmpty()){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"존재하지 않는 회원입니다.");
         }
-        MemberDetail member = findMember.get();
+        if(findMember.isPresent()){
+            MemberDetail member = findMember.get();
 
-        List<CalendarRange> findCalendarRange = calendarRangeRepository.findDateRangeByMember(member, LocalDate.parse(start_date) , LocalDate.parse(end_date));
-        List<Calendar> findCalendar = calendarRepository.findDateRangeByMember(member, LocalDate.parse(start_date) , LocalDate.parse(end_date));
-        ArrayList<CalendarRangeDTO> cr = new ArrayList<>();
-        for (CalendarRange calendarRange : findCalendarRange) {
-            CalendarRangeDTO crd = new CalendarRangeDTO();
-            crd.setId(calendarRange.getId());
-            crd.setContent(calendarRange.getContent());
-            crd.setEnd_date(calendarRange.getEnd_date());
-            crd.setStart_date(calendarRange.getStart_date());
-            crd.setTitle(calendarRange.getTitle());
-            cr.add(crd);
+            List<CalendarRange> findCalendarRange = calendarRangeRepository.findDateRangeByMember(member, LocalDate.parse(start_date) , LocalDate.parse(end_date));
+            List<Calendar> findCalendar = calendarRepository.findDateRangeByMember(member, LocalDate.parse(start_date) , LocalDate.parse(end_date));
+            ArrayList<CalendarRangeDTO> cr = new ArrayList<>();
+            for (CalendarRange calendarRange : findCalendarRange) {
+                CalendarRangeDTO crd = new CalendarRangeDTO();
+                crd.setId(calendarRange.getId());
+                crd.setContent(calendarRange.getContent());
+                crd.setEnd_date(calendarRange.getEnd_date());
+                crd.setStart_date(calendarRange.getStart_date());
+                crd.setTitle(calendarRange.getTitle());
+                cr.add(crd);
+            }
+            ArrayList<CalendarDTO> c = new ArrayList<>();
+            for (Calendar calendar : findCalendar) {
+                CalendarDTO cd = new CalendarDTO();
+                cd.setId(calendar.getId());
+                cd.setContent(calendar.getContent());
+                cd.setDate(calendar.getDate());
+                cd.setTitle(calendar.getTitle());
+                c.add(cd);
+            }
+            HashMap<String, Object> value = new HashMap<>();
+            value.put("range", cr);
+            value.put("single", c);
+            return value;
         }
-        ArrayList<CalendarDTO> c = new ArrayList<>();
-        for (Calendar calendar : findCalendar) {
-            CalendarDTO cd = new CalendarDTO();
-            cd.setId(calendar.getId());
-            cd.setContent(calendar.getContent());
-            cd.setDate(calendar.getDate());
-            cd.setTitle(calendar.getTitle());
-            c.add(cd);
-        }
-        HashMap<String, Object> value = new HashMap<>();
-        value.put("range", cr);
-        value.put("single", c);
-        return value;
+        return null;
 
     }
 

@@ -12,7 +12,6 @@ import java.util.List;
 
 @Entity
 @Getter @Setter
-@Inheritance(strategy = InheritanceType.JOINED)
 public class Board {
 
     @Id
@@ -24,6 +23,12 @@ public class Board {
     private int views;
     private LocalDateTime created;
     private LocalDateTime updated;
+
+    private String video_url;
+    private String original_url;
+
+    @Enumerated(EnumType.STRING)
+    private VideoType videoType = VideoType.NONE;
 
     @ManyToOne
     @JoinColumn(name = "member_id")

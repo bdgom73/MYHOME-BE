@@ -14,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
+import java.io.IOException;
+import java.sql.SQLDataException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +44,14 @@ public class BoardController {
         @PathParam("category") String category,
         @RequestParam("title") String title,
         @RequestParam("description") String description,
-        @RequestParam(value = "image", required = false) List<MultipartFile> files,
-        @RequestParam(value = "video", required = false) MultipartFile videoFile,
-        @RequestParam(value = "video_url", required = false) String video_url,
+        @RequestParam(name = "image", required = false) List<MultipartFile> files,
+        @RequestParam(name = "video", required = false) MultipartFile videoFile,
+        @RequestParam(name = "video_url", required = false) String video_url,
         HttpServletResponse httpServletResponse
     ) throws Exception {
         MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
         String s = category.toUpperCase();
-        Optional<Category> cate = categoryRepository.findByName(s);
+        Optional<Category> cate = categoryRepository.findByName(CategoryList.valueOf(s));
         if(cate.isEmpty()) s = "FREE";
         Category category1 = cate.get();
 
@@ -73,26 +75,20 @@ public class BoardController {
         }else if(s.equals(CategoryList.VIDEO.toString())){
             FileUpload fileUpload = new FileUpload();
             fileUpload.setPATHNAME("/board/video/");
-            VideoBoard board = new VideoBoard();
-            if(!video_url.isEmpty()){
+            Board board = boardInit(title, description, category1, member);
+            if(video_url != null){
                 board.setVideoType(VideoType.YOUTUBE);
                 board.setVideo_url(video_url);
             }
-            if(!videoFile.isEmpty()){
+            if(videoFile != null ){
                 board.setVideoType(VideoType.LOCAL);
                 Map<String, String> videoFileSave = fileUpload.Save(videoFile);
                 board.setOriginal_url(videoFileSave.get("ABSOLUTE_PATH"));
                 board.setVideo_url(videoFileSave.get("PATH"));
             }
-            board.setTitle(title);
-            board.setDescription(description);
-            board.setCategory(category1);
-            board.setCreated(LocalDateTime.now());
-            board.setUpdated(LocalDateTime.now());
-            board.setViews(0);
-            board.setMember(member);
-            VideoBoard videoBoard = boardRepository.save(board);
-            return videoBoard.getId();
+
+            Board Board = boardRepository.save(board);
+            return Board.getId();
         }
 
         return null;
@@ -100,26 +96,23 @@ public class BoardController {
 
     @GetMapping("/{board}/get")
     public List<BoardWriteDTO> BoardData(
-            @PathVariable ("board") String board
+            @PathVariable("board") String board
     ) throws Exception {
         String board_cate = board.toUpperCase();
-        CategoryList category = CategoryList.FREE;
-        if(board_cate.equals("PHOTO")) category = CategoryList.PHOTO;
-        if(board_cate.equals("VIDEO")) category = CategoryList.VIDEO;
 
-        Optional<Category> findCategory = categoryRepository.findByName(category.toString());
+        Optional<Category> findCategory = categoryRepository.findByName(CategoryList.valueOf(board_cate));
         if(findCategory.isEmpty()) throw new Exception("존재하지 않는 카테고리입니다.");
-        List<VideoBoard> findBoard = boardRepository.findByCategory(findCategory.get());
+        List<Board> findBoard = boardRepository.findByCategory(findCategory.get());
 
-       if(category.equals(CategoryList.PHOTO)){
+       if(CategoryList.valueOf(board_cate).equals(CategoryList.PHOTO)){
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
-            for (VideoBoard videoBoard : findBoard) {
+            for (Board board2 : findBoard) {
                 BoardWriteDTO boardWriteDTO = new BoardWriteDTO();
-                boardWriteDTO.setTitle(videoBoard.getTitle());
-                boardWriteDTO.setDescription(videoBoard.getDescription());
-                boardWriteDTO.setCategoryList(category);
+                boardWriteDTO.setTitle(board2.getTitle());
+                boardWriteDTO.setDescription(board2.getDescription());
+                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
 
-                List<Image> imageList = videoBoard.getImageList();
+                List<Image> imageList = board2.getImageList();
                 List<ImageDTO> imageDTOList = new ArrayList<>();
                 for (Image image : imageList) {
                     ImageDTO imageDTO = new ImageDTO();
@@ -132,30 +125,65 @@ public class BoardController {
                 boardWriteDTOList.add(boardWriteDTO);
             }
             return boardWriteDTOList;
-        }else if(category.equals(CategoryList.VIDEO)){
+        }else if(CategoryList.valueOf(board_cate).equals(CategoryList.VIDEO)){
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
-            for (VideoBoard videoBoard : findBoard) {
+            for (Board board2 : findBoard) {
                 BoardWriteDTO boardWriteDTO = new BoardWriteDTO();
-                boardWriteDTO.setTitle(videoBoard.getTitle());
-                boardWriteDTO.setDescription(videoBoard.getDescription());
-                boardWriteDTO.setCategoryList(category);
-                boardWriteDTO.setVideo_url(videoBoard.getVideo_url());
-                boardWriteDTO.setVideoType(videoBoard.getVideoType());
+                boardWriteDTO.setTitle(board2.getTitle());
+                boardWriteDTO.setDescription(board2.getDescription());
+                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
+                boardWriteDTO.setVideoType(board2.getVideoType());
+                boardWriteDTO.setVideo_url(board2.getVideo_url());
                 boardWriteDTOList.add(boardWriteDTO);
             }
             return boardWriteDTOList;
         }else{
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
-            for (VideoBoard videoBoard : findBoard) {
+            for (Board board2 : findBoard) {
                 BoardWriteDTO boardWriteDTO = new BoardWriteDTO();
-                boardWriteDTO.setTitle(videoBoard.getTitle());
-                boardWriteDTO.setDescription(videoBoard.getDescription());
-                boardWriteDTO.setCategoryList(category);
+                boardWriteDTO.setTitle(board2.getTitle());
+                boardWriteDTO.setDescription(board2.getDescription());
+                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
                 boardWriteDTOList.add(boardWriteDTO);
             }
-            return boardWriteDTOList;
-        }
 
+            return boardWriteDTOList;
+
+        }
+    }
+
+    @PutMapping("/update")
+    public void updateBoard(
+            @RequestHeader("Authorization") String UID,
+            @PathParam("category") String category,
+            @RequestParam("id") Long id,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam(name = "image", required = false) List<MultipartFile> files,
+            @RequestParam(name = "video", required = false) MultipartFile videoFile,
+            @RequestParam(name = "video_url", required = false) String video_url,
+            HttpServletResponse httpServletResponse
+    ) throws IOException {
+        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
+        Optional<Board> findBoard = boardRepository.findById(id);
+        if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지 않는 게시물입니다.");
+        Board board = findBoard.get();
+        if(!board.getMember().getSESSION_UID().equals(UID)) httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"수정 권한이 없습니다.");
+        board.setUpdated(LocalDateTime.now());
+        board.setDescription(description);
+        board.setTitle(title);
+        if(!videoFile.isEmpty()){
+            FileUpload fileUpload = new FileUpload();
+            fileUpload.setPATHNAME("/board/video/");
+            Map<String, String> save = fileUpload.Save(videoFile);
+            board.setVideo_url(save.get("PATH"));
+            board.setOriginal_url(save.get("ABSOLUTE_PATH"));
+            board.setVideoType(VideoType.LOCAL);
+        }
+        if(!video_url.isEmpty()){
+            board.setVideo_url(video_url);
+            board.setVideoType(VideoType.YOUTUBE);
+        }
     }
 
     private Board boardInit(String title, String description, Category category1, MemberDetail member) {
