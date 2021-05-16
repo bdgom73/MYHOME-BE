@@ -1,10 +1,13 @@
 package com.myhome.server.Entity.Board;
 
 import com.myhome.server.Entity.Member.Member;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
+@Getter @Setter
 public class Recommend {
 
     @Id @GeneratedValue
@@ -15,11 +18,16 @@ public class Recommend {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_id")
     private Member member;
 
     private Boolean state;
 
     private String category;
+
+    public void addBoard(Board board){
+        this.board = board;
+        board.getRecommendList().add(this);
+    }
 }

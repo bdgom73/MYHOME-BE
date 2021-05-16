@@ -7,6 +7,7 @@ import com.myhome.server.Entity.Member.MemberDetail;
 import com.myhome.server.Repository.Board.BoardRepository;
 import com.myhome.server.Repository.Board.CategoryRepository;
 import com.myhome.server.Repository.Board.ImageRepository;
+import com.myhome.server.Repository.Board.RecommendRepository;
 import com.myhome.server.Service.FileUpload;
 import com.myhome.server.Service.MemberService;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
 import java.io.IOException;
-import java.sql.SQLDataException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +30,25 @@ public class BoardController {
     private final BoardRepository boardRepository;
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
-
-    public BoardController(MemberService memberService, BoardRepository boardRepository, CategoryRepository categoryRepository, ImageRepository imageRepository) {
+    private final RecommendRepository recommendRepository;
+    public BoardController(MemberService memberService, BoardRepository boardRepository, CategoryRepository categoryRepository, ImageRepository imageRepository, RecommendRepository recommendRepository) {
         this.memberService = memberService;
         this.boardRepository = boardRepository;
         this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
+        this.recommendRepository = recommendRepository;
+    }
+
+    @GetMapping("/view/{id}")
+    public BoardWriteDTO boardDetail(
+            @PathVariable("id") Long id,
+            HttpServletResponse httpServletResponse
+    ) throws IOException {
+        Optional<Board> findBoard = boardRepository.findById(id);
+        if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재 하지 않는 게시글입니다.");
+        Board board = findBoard.get();
+        BoardWriteDTO boardWriteDTO = new BoardWriteDTO(board);
+        return boardWriteDTO;
     }
 
     @PostMapping("/write")
@@ -58,6 +71,7 @@ public class BoardController {
         if(s.equals(CategoryList.FREE.toString())){
             Board board = boardInit(title, description, category1, member);
             Board value = boardRepository.save(board);
+
             return value.getId();
         }else if(s.equals(CategoryList.PHOTO.toString())){
             FileUpload fileUpload = new FileUpload();
@@ -76,6 +90,11 @@ public class BoardController {
             FileUpload fileUpload = new FileUpload();
             fileUpload.setPATHNAME("/board/video/");
             Board board = boardInit(title, description, category1, member);
+            Board boardSave = boardRepository.save(board);
+
+
+            boardRepository.save(boardSave);
+
             if(video_url != null){
                 board.setVideoType(VideoType.YOUTUBE);
                 board.setVideo_url(video_url);
@@ -107,43 +126,21 @@ public class BoardController {
        if(CategoryList.valueOf(board_cate).equals(CategoryList.PHOTO)){
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
             for (Board board2 : findBoard) {
-                BoardWriteDTO boardWriteDTO = new BoardWriteDTO();
-                boardWriteDTO.setTitle(board2.getTitle());
-                boardWriteDTO.setDescription(board2.getDescription());
-                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
-
-                List<Image> imageList = board2.getImageList();
-                List<ImageDTO> imageDTOList = new ArrayList<>();
-                for (Image image : imageList) {
-                    ImageDTO imageDTO = new ImageDTO();
-                    imageDTO.setId(image.getId());
-                    imageDTO.setImage_url(image.getImage_url());
-                    imageDTO.setOriginal_url(image.getOriginal_url());
-                    imageDTOList.add(imageDTO);
-                }
-                boardWriteDTO.setImageList(imageDTOList);
+                BoardWriteDTO boardWriteDTO = new BoardWriteDTO(board2);
                 boardWriteDTOList.add(boardWriteDTO);
             }
             return boardWriteDTOList;
         }else if(CategoryList.valueOf(board_cate).equals(CategoryList.VIDEO)){
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
             for (Board board2 : findBoard) {
-                BoardWriteDTO boardWriteDTO = new BoardWriteDTO();
-                boardWriteDTO.setTitle(board2.getTitle());
-                boardWriteDTO.setDescription(board2.getDescription());
-                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
-                boardWriteDTO.setVideoType(board2.getVideoType());
-                boardWriteDTO.setVideo_url(board2.getVideo_url());
+                BoardWriteDTO boardWriteDTO = new BoardWriteDTO(board2);
                 boardWriteDTOList.add(boardWriteDTO);
             }
             return boardWriteDTOList;
         }else{
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
             for (Board board2 : findBoard) {
-                BoardWriteDTO boardWriteDTO = new BoardWriteDTO();
-                boardWriteDTO.setTitle(board2.getTitle());
-                boardWriteDTO.setDescription(board2.getDescription());
-                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
+                BoardWriteDTO boardWriteDTO = new BoardWriteDTO(board2);
                 boardWriteDTOList.add(boardWriteDTO);
             }
 
@@ -164,26 +161,7 @@ public class BoardController {
             @RequestParam(name = "video_url", required = false) String video_url,
             HttpServletResponse httpServletResponse
     ) throws IOException {
-        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
-        Optional<Board> findBoard = boardRepository.findById(id);
-        if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지 않는 게시물입니다.");
-        Board board = findBoard.get();
-        if(!board.getMember().getSESSION_UID().equals(UID)) httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"수정 권한이 없습니다.");
-        board.setUpdated(LocalDateTime.now());
-        board.setDescription(description);
-        board.setTitle(title);
-        if(!videoFile.isEmpty()){
-            FileUpload fileUpload = new FileUpload();
-            fileUpload.setPATHNAME("/board/video/");
-            Map<String, String> save = fileUpload.Save(videoFile);
-            board.setVideo_url(save.get("PATH"));
-            board.setOriginal_url(save.get("ABSOLUTE_PATH"));
-            board.setVideoType(VideoType.LOCAL);
-        }
-        if(!video_url.isEmpty()){
-            board.setVideo_url(video_url);
-            board.setVideoType(VideoType.YOUTUBE);
-        }
+
     }
 
     private Board boardInit(String title, String description, Category category1, MemberDetail member) {
@@ -200,3 +178,23 @@ public class BoardController {
 
 
 }
+//                boardWriteDTO.setId(board2.getId());
+//                boardWriteDTO.setWriter(board2.getMember().getName());
+//                boardWriteDTO.setCreated(board2.getCreated());
+//                boardWriteDTO.setUpdated(board2.getUpdated());
+//
+//                boardWriteDTO.setTitle(board2.getTitle());
+//                boardWriteDTO.setDescription(board2.getDescription());
+//                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
+//                boardWriteDTO.setViews(board2.getViews());
+//                boardWriteDTO.setRecommend(board2.getRecommendList().size());
+//                List<Image> imageList = board2.getImageList();
+//                List<ImageDTO> imageDTOList = new ArrayList<>();
+//                for (Image image : imageList) {
+//                    ImageDTO imageDTO = new ImageDTO();
+//                    imageDTO.setId(image.getId());
+//                    imageDTO.setImage_url(image.getImage_url());
+//                    imageDTO.setOriginal_url(image.getOriginal_url());
+//                    imageDTOList.add(imageDTO);
+//                }
+//                boardWriteDTO.setImageList(imageDTOList);

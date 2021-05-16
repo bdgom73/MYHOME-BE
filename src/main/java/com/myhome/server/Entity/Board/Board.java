@@ -41,4 +41,7 @@ public class Board {
     @OneToMany(mappedBy = "board")
     private List<Image> imageList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "board")
+    private List<Recommend> recommendList = new ArrayList<>();
+
 }
