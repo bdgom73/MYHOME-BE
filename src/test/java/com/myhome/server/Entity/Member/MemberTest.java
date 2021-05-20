@@ -2,14 +2,20 @@ package com.myhome.server.Entity.Member;
 
 import com.myhome.server.Crypt.Bcrypt;
 import com.myhome.server.Entity.Board.Board;
+import com.myhome.server.Entity.Board.Category;
 import com.myhome.server.Entity.Board.CategoryList;
 import com.myhome.server.Repository.Board.BoardRepository;
+import com.myhome.server.Repository.Board.CategoryRepository;
 import com.myhome.server.Repository.Member.MemberDetailRepository;
 import com.myhome.server.Service.FileUpload;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,6 +45,8 @@ class MemberTest {
     @Autowired
     BoardRepository boardRepository;
 
+    @Autowired
+    CategoryRepository categoryRepository;
     @Test
     public void MemberTest(){
         MemberDetail member = new MemberDetail();
@@ -77,10 +85,15 @@ class MemberTest {
 
     @Test
     public void BoardTest(){
-        FileUpload fileUpload = new FileUpload();
+        Optional<Category> byName = categoryRepository.findByName(CategoryList.VIDEO);
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC,
+                "id"));
+        Slice<Board> pageByCategory = boardRepository.findPageByCategory(byName.get(), pageRequest);
 
-        ByteArrayInputStream fetch = fileUpload.fetch("E:/download/img.jpg");
-        System.out.println("data:Image/png;base64," + fetch.readAllBytes());
+        System.out.println("pageByCategory = " + pageByCategory.get().count());
+        for (Board board : pageByCategory) {
+            System.out.println("board = " + board.getTitle());
+        }
 
     }
 }

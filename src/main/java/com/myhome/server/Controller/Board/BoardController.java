@@ -1,7 +1,6 @@
 package com.myhome.server.Controller.Board;
 
 import com.myhome.server.DTO.BoardWriteDTO;
-import com.myhome.server.DTO.ImageDTO;
 import com.myhome.server.Entity.Board.*;
 import com.myhome.server.Entity.Member.MemberDetail;
 import com.myhome.server.Repository.Board.BoardRepository;
@@ -10,6 +9,9 @@ import com.myhome.server.Repository.Board.ImageRepository;
 import com.myhome.server.Repository.Board.RecommendRepository;
 import com.myhome.server.Service.FileUpload;
 import com.myhome.server.Service.MemberService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -105,23 +107,37 @@ public class BoardController {
                 board.setOriginal_url(videoFileSave.get("ABSOLUTE_PATH"));
                 board.setVideo_url(videoFileSave.get("PATH"));
             }
-
+            if(video_url == null && videoFile == null){
+                board.setVideoType(VideoType.NONE);
+            }
             Board Board = boardRepository.save(board);
             return Board.getId();
         }
 
         return null;
     }
-
+    @GetMapping("/{board}/size")
+    public Integer BoardSize(
+            @PathVariable("board") String board
+    ) throws Exception {
+        String board_cate = board.toUpperCase();
+        Optional<Category> findCategory = categoryRepository.findByName(CategoryList.valueOf(board_cate));
+        if(findCategory.isEmpty()) throw new Exception("존재하지 않는 카테고리입니다.");
+        List<Board> byCategory = boardRepository.findByCategory(findCategory.get());
+        return byCategory.size();
+    }
     @GetMapping("/{board}/get")
     public List<BoardWriteDTO> BoardData(
-            @PathVariable("board") String board
+            @PathVariable("board") String board,
+            @PathParam("size") int size,
+            @PathParam("page") int page
     ) throws Exception {
         String board_cate = board.toUpperCase();
 
         Optional<Category> findCategory = categoryRepository.findByName(CategoryList.valueOf(board_cate));
         if(findCategory.isEmpty()) throw new Exception("존재하지 않는 카테고리입니다.");
-        List<Board> findBoard = boardRepository.findByCategory(findCategory.get());
+        PageRequest pageRequest = PageRequest.of(page,size,Sort.by("created").descending());
+        Slice<Board> findBoard = boardRepository.findPageByCategory(findCategory.get(),pageRequest);
 
        if(CategoryList.valueOf(board_cate).equals(CategoryList.PHOTO)){
             List<BoardWriteDTO> boardWriteDTOList = new ArrayList<>();
@@ -164,6 +180,59 @@ public class BoardController {
 
     }
 
+    @GetMapping("/{board_id}/{member_id}/recommend")
+    public void recommend(
+        @PathVariable("board_id") Long board_id,
+        @PathVariable("member_id") String member_id,
+        HttpServletResponse httpServletResponse
+    ) throws IOException {
+        MemberDetail member = memberService.LoginCheck(member_id, httpServletResponse);
+        Optional<Board> findBoard = boardRepository.findById(board_id);
+        if(findBoard.isEmpty()){
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지 않는 게시글입니다.");
+        }
+        Board board = findBoard.get();
+        Optional<Recommend> findRecommend = recommendRepository.findByRecommend(member, board, board.getCategory().getName().toString());
+        if(findRecommend.isEmpty()){
+            Recommend recommend = new Recommend();
+            recommend.setBoard(board);
+            recommend.setState(true);
+            recommend.setMember(member);
+            recommend.setCategory(board.getCategory().getName().toString());
+            recommendRepository.save(recommend);
+        }else{
+            if(findRecommend.get().getState()){
+                httpServletResponse.setStatus(HttpServletResponse.SC_ACCEPTED);
+            }else{
+                findRecommend.get().setState(true);
+                recommendRepository.save(findRecommend.get());
+            }
+        }
+    }
+
+    @GetMapping("/{board_id}/check/recommend")
+    public boolean checkRecommend(
+            @PathVariable("board_id") Long board_id,
+            @RequestHeader("Authorization") String UID,
+            HttpServletResponse httpServletResponse
+    ) throws IOException {
+        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
+        Optional<Board> findBoard = boardRepository.findById(board_id);
+        if(findBoard.isEmpty()){
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지 않는 게시글입니다.");
+        }
+        Board board = findBoard.get();
+        Optional<Recommend> findRecommend = recommendRepository.findByRecommend(member, board, board.getCategory().getName().toString());
+        if(findRecommend.isEmpty()){
+            return true;
+        }else{
+            if(findRecommend.get().getState()){
+                return false;
+            }else{
+                return true;
+            }
+        }
+    }
     private Board boardInit(String title, String description, Category category1, MemberDetail member) {
         Board board = new Board();
         board.setTitle(title);
