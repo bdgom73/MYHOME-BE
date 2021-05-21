@@ -21,6 +21,7 @@ public class BoardWriteDTO {
     private String description;
     private String writer;
     private Long writer_id;
+    private String writer_avatar_url;
     private CategoryList categoryList;
     private String video_url;
     private VideoType videoType;
@@ -29,13 +30,14 @@ public class BoardWriteDTO {
     private int views;
     private int recommend;
     private List<ImageDTO> imageList = new ArrayList<>();
-
+    private List<CommentDTO> commentDTOList = new ArrayList<>();
     public BoardWriteDTO(Board board){
         this.id = board.getId();
         this.title = board.getTitle();
         this.description = board.getDescription();
         this.writer = board.getMember().getName();
         this.writer_id = board.getMember().getId();
+        this.writer_avatar_url = board.getMember().getAvatar_url();
         this.categoryList = board.getCategory().getName();
         this.video_url = board.getVideo_url();
         this.videoType = board.getVideoType();
@@ -50,5 +52,18 @@ public class BoardWriteDTO {
             imageDTO.setOriginal_url(m.getOriginal_url());
             return imageDTO;
         }).collect(Collectors.toList());
+        this.commentDTOList = board.getBoardCommentList().stream().map(m->{
+            CommentDTO commentDTO = new CommentDTO();
+            commentDTO.setBoard_id(m.getBoard().getId());
+            commentDTO.setId(m.getId());
+            commentDTO.setCreated(m.getCreated());
+            commentDTO.setDescription(m.getDescription());
+            commentDTO.setUpdated(m.getUpdated());
+            commentDTO.setMember_id(m.getMember().getId());
+            commentDTO.setName(m.getMember().getName());
+            commentDTO.setAvatar_url(m.getMember().getAvatar_url());
+            return commentDTO;
+        }).collect(Collectors.toList());
+
     }
 }

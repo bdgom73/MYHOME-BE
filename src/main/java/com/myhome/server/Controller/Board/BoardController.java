@@ -1,12 +1,15 @@
 package com.myhome.server.Controller.Board;
 
 import com.myhome.server.DTO.BoardWriteDTO;
+import com.myhome.server.DTO.CommentDTO;
 import com.myhome.server.Entity.Board.*;
+import com.myhome.server.Entity.Comment.BoardComment;
 import com.myhome.server.Entity.Member.MemberDetail;
 import com.myhome.server.Repository.Board.BoardRepository;
 import com.myhome.server.Repository.Board.CategoryRepository;
 import com.myhome.server.Repository.Board.ImageRepository;
 import com.myhome.server.Repository.Board.RecommendRepository;
+import com.myhome.server.Repository.Comment.CommentRepository;
 import com.myhome.server.Service.FileUpload;
 import com.myhome.server.Service.MemberService;
 import org.springframework.data.domain.PageRequest;
@@ -33,12 +36,14 @@ public class BoardController {
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
     private final RecommendRepository recommendRepository;
-    public BoardController(MemberService memberService, BoardRepository boardRepository, CategoryRepository categoryRepository, ImageRepository imageRepository, RecommendRepository recommendRepository) {
+    private final CommentRepository commentRepository;
+    public BoardController(MemberService memberService, BoardRepository boardRepository, CategoryRepository categoryRepository, ImageRepository imageRepository, RecommendRepository recommendRepository, CommentRepository commentRepository) {
         this.memberService = memberService;
         this.boardRepository = boardRepository;
         this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
         this.recommendRepository = recommendRepository;
+        this.commentRepository = commentRepository;
     }
 
     @GetMapping("/view/{id}")
@@ -168,7 +173,6 @@ public class BoardController {
     @PutMapping("/update")
     public void updateBoard(
             @RequestHeader("Authorization") String UID,
-            @PathParam("category") String category,
             @RequestParam("id") Long id,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
@@ -177,7 +181,49 @@ public class BoardController {
             @RequestParam(name = "video_url", required = false) String video_url,
             HttpServletResponse httpServletResponse
     ) throws IOException {
+        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
 
+        Optional<Board> findBoard = boardRepository.findById(id);
+        if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지않는 게시글입니다.");
+        Board board = findBoard.get();
+        board.setUpdated(LocalDateTime.now());
+        board.setTitle(title);
+        board.setDescription(description);
+        board.setVideo_url(video_url);
+
+
+        if(video_url != null){
+            board.setVideoType(VideoType.YOUTUBE);
+            board.setVideo_url(video_url);
+        }
+        if(videoFile != null ){
+            FileUpload fileUpload = new FileUpload();
+            fileUpload.setPATHNAME("/board/video/");
+            board.setVideoType(VideoType.LOCAL);
+            Map<String, String> videoFileSave = fileUpload.Save(videoFile);
+            board.setOriginal_url(videoFileSave.get("ABSOLUTE_PATH"));
+            board.setVideo_url(videoFileSave.get("PATH"));
+        }
+        if(video_url == null && videoFile == null){
+            board.setVideoType(VideoType.NONE);
+        }
+        if(files.size() > 0){
+            FileUpload fileUpload = new FileUpload();
+            for (MultipartFile multipartFile : files) {
+                Image image = new Image();
+                Map<String, String> fileValue = fileUpload.Save(multipartFile);
+                image.setOriginal_url(fileValue.get("ABSOLUTE_PATH"));
+                image.setImage_url(fileValue.get("PATH"));
+                image.addImageToBoard(board);
+                imageRepository.save(image);
+            }
+            List<Image> imageList = imageRepository.findByBoard(board);
+            if(imageList.size() > 0){
+                for (Image image : imageList) {
+                    image.setState(false);
+                }
+            }
+        }
     }
 
     @GetMapping("/{board_id}/{member_id}/recommend")
@@ -233,6 +279,42 @@ public class BoardController {
             }
         }
     }
+
+    @PostMapping("/{board_id}/write/comment")
+    public CommentDTO writeComment(
+        @PathVariable("board_id") Long board_id,
+        @RequestHeader("Authorization") String UID,
+        @RequestParam("description") String description,
+        HttpServletResponse httpServletResponse
+    ) throws IOException {
+        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
+        Optional<Board> findBoard = boardRepository.findById(board_id);
+        if(findBoard.isEmpty()){
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지 않는 게시글입니다.");
+        }
+        Board board = findBoard.get();
+        BoardComment boardComment = new BoardComment();
+        boardComment.setCreated(LocalDateTime.now());
+        boardComment.setDescription(description);
+        boardComment.setUpdated(LocalDateTime.now());
+        boardComment.addComment(board);
+
+        boardComment.setMember(member);
+        boardRepository.save(board);
+        BoardComment save = commentRepository.save(boardComment);
+
+        CommentDTO commentDTO = new CommentDTO();
+        commentDTO.setId(save.getId());
+        commentDTO.setAvatar_url(save.getMember().getAvatar_url());
+        commentDTO.setName(save.getMember().getName());
+        commentDTO.setBoard_id(save.getBoard().getId());
+        commentDTO.setMember_id(save.getMember().getId());
+        commentDTO.setUpdated(save.getUpdated());
+        commentDTO.setCreated(save.getCreated());
+        commentDTO.setDescription(save.getDescription());
+        return commentDTO;
+    }
+
     private Board boardInit(String title, String description, Category category1, MemberDetail member) {
         Board board = new Board();
         board.setTitle(title);
@@ -247,23 +329,3 @@ public class BoardController {
 
 
 }
-//                boardWriteDTO.setId(board2.getId());
-//                boardWriteDTO.setWriter(board2.getMember().getName());
-//                boardWriteDTO.setCreated(board2.getCreated());
-//                boardWriteDTO.setUpdated(board2.getUpdated());
-//
-//                boardWriteDTO.setTitle(board2.getTitle());
-//                boardWriteDTO.setDescription(board2.getDescription());
-//                boardWriteDTO.setCategoryList(CategoryList.valueOf(board_cate));
-//                boardWriteDTO.setViews(board2.getViews());
-//                boardWriteDTO.setRecommend(board2.getRecommendList().size());
-//                List<Image> imageList = board2.getImageList();
-//                List<ImageDTO> imageDTOList = new ArrayList<>();
-//                for (Image image : imageList) {
-//                    ImageDTO imageDTO = new ImageDTO();
-//                    imageDTO.setId(image.getId());
-//                    imageDTO.setImage_url(image.getImage_url());
-//                    imageDTO.setOriginal_url(image.getOriginal_url());
-//                    imageDTOList.add(imageDTO);
-//                }
-//                boardWriteDTO.setImageList(imageDTOList);

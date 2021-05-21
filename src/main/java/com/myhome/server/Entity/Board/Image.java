@@ -14,7 +14,7 @@ public class Image {
     private Long id;
     private String image_url;
     private String original_url;
-
+    private Boolean state = true;
     @ManyToOne
     @JoinColumn(name = "board_id")
     private Board board;
@@ -34,5 +34,9 @@ public class Image {
 
     public void setOriginal_url(String original_url) {
         this.original_url = original_url;
+    }
+
+    public void setState(Boolean state) {
+        this.state = state;
     }
 }

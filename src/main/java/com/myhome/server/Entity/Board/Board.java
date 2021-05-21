@@ -1,5 +1,6 @@
 package com.myhome.server.Entity.Board;
 
+import com.myhome.server.Entity.Comment.BoardComment;
 import com.myhome.server.Entity.Member.Member;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,4 +45,6 @@ public class Board {
     @OneToMany(mappedBy = "board")
     private List<Recommend> recommendList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "board")
+    private List<BoardComment> boardCommentList = new ArrayList<>();
 }
