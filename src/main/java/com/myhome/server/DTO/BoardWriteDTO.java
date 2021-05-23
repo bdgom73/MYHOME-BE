@@ -4,6 +4,7 @@ import com.myhome.server.Entity.Board.Board;
 import com.myhome.server.Entity.Board.CategoryList;
 import com.myhome.server.Entity.Board.Image;
 import com.myhome.server.Entity.Board.VideoType;
+import com.myhome.server.Entity.Member.MemberRank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,10 +22,12 @@ public class BoardWriteDTO {
     private String description;
     private String writer;
     private Long writer_id;
+    private MemberRank rank;
     private String writer_avatar_url;
     private CategoryList categoryList;
     private String video_url;
     private VideoType videoType;
+    private String video_thumbnail;
     private LocalDateTime created;
     private LocalDateTime updated;
     private int views;
@@ -37,6 +40,7 @@ public class BoardWriteDTO {
         this.description = board.getDescription();
         this.writer = board.getMember().getName();
         this.writer_id = board.getMember().getId();
+        this.rank = board.getMember().getRank();
         this.writer_avatar_url = board.getMember().getAvatar_url();
         this.categoryList = board.getCategory().getName();
         this.video_url = board.getVideo_url();
@@ -62,6 +66,7 @@ public class BoardWriteDTO {
             commentDTO.setMember_id(m.getMember().getId());
             commentDTO.setName(m.getMember().getName());
             commentDTO.setAvatar_url(m.getMember().getAvatar_url());
+            commentDTO.setRank(m.getMember().getRank());
             return commentDTO;
         }).collect(Collectors.toList());
 

@@ -89,7 +89,7 @@ public class MemberService {
         authData.setEmail(member.getEmail());
         authData.setRank(member.getRank());
         authData.setAvatar_url(member.getAvatar_url());
-
+        authData.setId(member.getId());
         return authData;
     }
 

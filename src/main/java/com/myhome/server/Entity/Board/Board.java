@@ -27,6 +27,7 @@ public class Board {
 
     private String video_url;
     private String original_url;
+    private String video_thumbnail;
 
     @Enumerated(EnumType.STRING)
     private VideoType videoType = VideoType.NONE;

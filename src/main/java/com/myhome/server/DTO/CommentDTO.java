@@ -2,6 +2,7 @@ package com.myhome.server.DTO;
 
 import com.myhome.server.Entity.Board.Board;
 import com.myhome.server.Entity.Member.Member;
+import com.myhome.server.Entity.Member.MemberRank;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -20,5 +21,6 @@ public class CommentDTO {
     private String name;
     private String avatar_url;
     private Long board_id;
+    private MemberRank rank;
 
 }

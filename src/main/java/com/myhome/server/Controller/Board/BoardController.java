@@ -298,9 +298,7 @@ public class BoardController {
         boardComment.setDescription(description);
         boardComment.setUpdated(LocalDateTime.now());
         boardComment.addComment(board);
-
         boardComment.setMember(member);
-        boardRepository.save(board);
         BoardComment save = commentRepository.save(boardComment);
 
         CommentDTO commentDTO = new CommentDTO();
@@ -312,6 +310,8 @@ public class BoardController {
         commentDTO.setUpdated(save.getUpdated());
         commentDTO.setCreated(save.getCreated());
         commentDTO.setDescription(save.getDescription());
+        commentDTO.setRank(save.getMember().getRank());
+
         return commentDTO;
     }
 

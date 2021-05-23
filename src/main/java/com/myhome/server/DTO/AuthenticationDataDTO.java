@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 public class AuthenticationDataDTO {
 
+    private Long id;
     private String name;
     private String email;
     private MemberRank rank;

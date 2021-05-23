@@ -22,7 +22,7 @@ public class Member {
     private LocalDateTime updated;
 
     @Enumerated(EnumType.STRING)
-    private MemberRank rank = MemberRank.GUEST;
+    private MemberRank rank = MemberRank.USER;
 
     @Column(name="join_state")
     private boolean join_state = false;
