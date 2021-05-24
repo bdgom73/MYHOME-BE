@@ -14,6 +14,7 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
     private String name;
+    private String nickname;
     private String email;
     private String password;
     private String avatar_url;
@@ -60,5 +61,9 @@ public class Member {
 
     public void setAvatar_url(String avatar_url) {
         this.avatar_url = avatar_url;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

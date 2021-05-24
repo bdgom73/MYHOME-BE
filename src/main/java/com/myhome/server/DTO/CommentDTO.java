@@ -22,5 +22,6 @@ public class CommentDTO {
     private String avatar_url;
     private Long board_id;
     private MemberRank rank;
+    private String nickname;
 
 }

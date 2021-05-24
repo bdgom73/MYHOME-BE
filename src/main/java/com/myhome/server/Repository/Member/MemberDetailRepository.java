@@ -15,4 +15,6 @@ public interface MemberDetailRepository extends JpaRepository<MemberDetail, Long
 
    @Query("SELECT m FROM Member m where sessionUID = :sessionUID ")
    Optional<MemberDetail> findBySessionUID(@Param("sessionUID") String sessionUID);
+
+   Optional<MemberDetail> findByNickname(String nickname);
 }

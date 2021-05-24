@@ -12,8 +12,9 @@ public class RegisterDTO {
     private String zipcode;
     private String address;
     private String detail_address;
+    private String nickname;
 
-    public RegisterDTO(String name, String email, String password, String password2, String zipcode, String address, String detail_address) {
+    public RegisterDTO(String name, String email, String password, String password2, String zipcode, String address, String detail_address,String nickname) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -21,5 +22,6 @@ public class RegisterDTO {
         this.zipcode = zipcode;
         this.address = address;
         this.detail_address = detail_address;
+        this.nickname = nickname;
     }
 }

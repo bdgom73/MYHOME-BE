@@ -22,6 +22,7 @@ public class BoardWriteDTO {
     private String description;
     private String writer;
     private Long writer_id;
+    private String nickname;
     private MemberRank rank;
     private String writer_avatar_url;
     private CategoryList categoryList;
@@ -40,6 +41,7 @@ public class BoardWriteDTO {
         this.description = board.getDescription();
         this.writer = board.getMember().getName();
         this.writer_id = board.getMember().getId();
+        this.nickname = board.getMember().getNickname();
         this.rank = board.getMember().getRank();
         this.writer_avatar_url = board.getMember().getAvatar_url();
         this.categoryList = board.getCategory().getName();
@@ -67,6 +69,7 @@ public class BoardWriteDTO {
             commentDTO.setName(m.getMember().getName());
             commentDTO.setAvatar_url(m.getMember().getAvatar_url());
             commentDTO.setRank(m.getMember().getRank());
+            commentDTO.setNickname(m.getMember().getNickname());
             return commentDTO;
         }).collect(Collectors.toList());
 

@@ -4,27 +4,39 @@ import com.myhome.server.Crypt.Bcrypt;
 import com.myhome.server.DTO.AuthenticationDataDTO;
 import com.myhome.server.DTO.RegisterDTO;
 import com.myhome.server.Entity.Member.MemberDetail;
+import com.myhome.server.Entity.Word.FilterText;
 import com.myhome.server.Repository.Member.MemberDetailRepository;
+import com.myhome.server.Repository.Word.FilterTextRepository;
+import com.sun.jdi.request.DuplicateRequestException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import javax.naming.SizeLimitExceededException;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.ValidationException;
 import java.io.IOException;
 import java.sql.SQLDataException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class MemberService {
 
     private MemberDetailRepository memberDetailRepository;
     private Bcrypt bcrypt;
-    BCryptPasswordEncoder pass = new BCryptPasswordEncoder();
-    public MemberService(MemberDetailRepository memberDetailRepository, Bcrypt bcrypt) {
+    private BCryptPasswordEncoder pass = new BCryptPasswordEncoder();
+    private FilterTextRepository filterTextRepository;
+
+    public MemberService(MemberDetailRepository memberDetailRepository, Bcrypt bcrypt, FilterTextRepository filterTextRepository) {
         this.memberDetailRepository = memberDetailRepository;
         this.bcrypt = bcrypt;
+        this.filterTextRepository = filterTextRepository;
     }
 
     public String Login(String email, String password) throws LoginException {
@@ -58,6 +70,8 @@ public class MemberService {
             throw new Exception("비밀번호가 서로 다릅니다.");
         }
 
+        DuplicateNickName(registerDTO.getNickname());
+
         MemberDetail member = new MemberDetail();
         member.setName(registerDTO.getName());
         member.setEmail(registerDTO.getEmail());
@@ -67,7 +81,7 @@ public class MemberService {
         member.setAddress(registerDTO.getAddress());
         member.setZipcode(registerDTO.getZipcode());
         member.setDetail_address(registerDTO.getDetail_address());
-
+        member.setNickname(registerDTO.getNickname());
         MemberDetail savedMember = memberDetailRepository.save(member);
         String sessionUid = bcrypt.createSessionUid(savedMember.getId());
         savedMember.setSESSION_UID(sessionUid);
@@ -102,4 +116,35 @@ public class MemberService {
         return member;
     }
 
+    public void DuplicateNickName(String nickname) throws SizeLimitExceededException, ValidationException {
+        Optional<MemberDetail> findMember = memberDetailRepository.findByNickname(nickname);
+        if(findMember.isPresent()){
+            throw new DuplicateRequestException("이미 존재하는 닉네임입니다");
+        }
+        if(nickname.length() < 2 && nickname.length() >= 12){
+            throw new SizeLimitExceededException("닉네임은 2글자이상 12글자이하로 사용가능합니다.");
+        }
+        if(FilterText(nickname).size() > 0){
+            throw new ValidationException("사용 불가능한 단어가 포함되어있습니다.");
+        }
+
+    }
+
+    public List<String> FilterText(String text) {
+        String notAvailableText = "";
+        Optional<FilterText> filter = filterTextRepository.findByKinds("filter");
+        if(filter.isEmpty()) notAvailableText =  "fuck|shit|개새끼|씨발|시발|운영자|ADMIN|병신|개시키";
+        else{
+            String getFilterText = filter.get().getText();
+            notAvailableText =  getFilterText.replaceAll(",", "|");
+        }
+        Pattern p = Pattern.compile(notAvailableText, Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(text);
+        List<String> words = new ArrayList<>();
+        while (m.find()) {
+            System.out.println("words = " + m.group());
+            words.add(m.group());
+        }
+        return words;
+    }
 }

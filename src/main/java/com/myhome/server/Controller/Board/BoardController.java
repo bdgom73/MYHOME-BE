@@ -311,7 +311,7 @@ public class BoardController {
         commentDTO.setCreated(save.getCreated());
         commentDTO.setDescription(save.getDescription());
         commentDTO.setRank(save.getMember().getRank());
-
+        commentDTO.setNickname(save.getMember().getNickname());
         return commentDTO;
     }
 
