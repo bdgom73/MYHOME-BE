@@ -21,11 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/bbs")
@@ -46,17 +44,23 @@ public class BoardController {
         this.commentRepository = commentRepository;
     }
 
-    @GetMapping("/view/{id}")
+    @GetMapping("/view/{id}/{category}")
     public BoardWriteDTO boardDetail(
             @PathVariable("id") Long id,
+            @PathVariable("category") String category,
             HttpServletResponse httpServletResponse
     ) throws IOException {
-        Optional<Board> findBoard = boardRepository.findById(id);
+        String s = category.toUpperCase();
+        Optional<Category> findCategory = categoryRepository.findByName(CategoryList.valueOf(s));
+        if(findCategory.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"해당 카테고리는 없습니다.");
+        Optional<Board> findBoard = boardRepository.findByIdAndCategory(id,findCategory.get());
+
         if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재 하지 않는 게시글입니다.");
         Board board = findBoard.get();
         BoardWriteDTO boardWriteDTO = new BoardWriteDTO(board);
         return boardWriteDTO;
     }
+
 
     @PostMapping("/write")
     public Long writePost(
@@ -64,7 +68,7 @@ public class BoardController {
         @PathParam("category") String category,
         @RequestParam("title") String title,
         @RequestParam("description") String description,
-        @RequestParam(name = "image", required = false) List<MultipartFile> files,
+        @RequestParam(name = "images[]" , required = false) MultipartFile[] files,
         @RequestParam(name = "video", required = false) MultipartFile videoFile,
         @RequestParam(name = "video_url", required = false) String video_url,
         HttpServletResponse httpServletResponse
@@ -89,24 +93,20 @@ public class BoardController {
                 Map<String, String> fileValue = fileUpload.Save(multipartFile);
                 image.setOriginal_url(fileValue.get("ABSOLUTE_PATH"));
                 image.setImage_url(fileValue.get("PATH"));
+                image.setFilename(fileValue.get("FILENAME"));
                 image.addImageToBoard(boardSave);
                 imageRepository.save(image);
             }
             return boardSave.getId();
         }else if(s.equals(CategoryList.VIDEO.toString())){
             FileUpload fileUpload = new FileUpload();
-            fileUpload.setPATHNAME("/board/video/");
+            fileUpload.setPATHNAME("/static/board/video/");
             Board board = boardInit(title, description, category1, member);
-            Board boardSave = boardRepository.save(board);
-
-
-            boardRepository.save(boardSave);
-
             if(video_url != null){
                 board.setVideoType(VideoType.YOUTUBE);
                 board.setVideo_url(video_url);
             }
-            if(videoFile != null ){
+            if(videoFile != null){
                 board.setVideoType(VideoType.LOCAL);
                 Map<String, String> videoFileSave = fileUpload.Save(videoFile);
                 board.setOriginal_url(videoFileSave.get("ABSOLUTE_PATH"));
@@ -115,8 +115,8 @@ public class BoardController {
             if(video_url == null && videoFile == null){
                 board.setVideoType(VideoType.NONE);
             }
-            Board Board = boardRepository.save(board);
-            return Board.getId();
+            Board board1 = boardRepository.save(board);
+            return board1.getId();
         }
 
         return null;
@@ -131,6 +131,7 @@ public class BoardController {
         List<Board> byCategory = boardRepository.findByCategory(findCategory.get());
         return byCategory.size();
     }
+
     @GetMapping("/{board}/get")
     public List<BoardWriteDTO> BoardData(
             @PathVariable("board") String board,
@@ -173,16 +174,17 @@ public class BoardController {
     @PutMapping("/update")
     public void updateBoard(
             @RequestHeader("Authorization") String UID,
+            @RequestParam("category") String category,
             @RequestParam("id") Long id,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam(name = "image", required = false) List<MultipartFile> files,
+            @RequestParam(name = "images[]", required = false) MultipartFile[] files,
             @RequestParam(name = "video", required = false) MultipartFile videoFile,
             @RequestParam(name = "video_url", required = false) String video_url,
             HttpServletResponse httpServletResponse
     ) throws IOException {
-        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
-
+       memberService.LoginCheck(UID, httpServletResponse);
+        String s = category.toUpperCase();
         Optional<Board> findBoard = boardRepository.findById(id);
         if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지않는 게시글입니다.");
         Board board = findBoard.get();
@@ -191,14 +193,12 @@ public class BoardController {
         board.setDescription(description);
         board.setVideo_url(video_url);
 
-
-        if(video_url != null){
+        if(video_url != null && CategoryList.valueOf(s).equals(CategoryList.VIDEO)){
             board.setVideoType(VideoType.YOUTUBE);
             board.setVideo_url(video_url);
         }
-        if(videoFile != null ){
+        if(videoFile != null && CategoryList.valueOf(s).equals(CategoryList.VIDEO)){
             FileUpload fileUpload = new FileUpload();
-            fileUpload.setPATHNAME("/board/video/");
             board.setVideoType(VideoType.LOCAL);
             Map<String, String> videoFileSave = fileUpload.Save(videoFile);
             board.setOriginal_url(videoFileSave.get("ABSOLUTE_PATH"));
@@ -207,13 +207,14 @@ public class BoardController {
         if(video_url == null && videoFile == null){
             board.setVideoType(VideoType.NONE);
         }
-        if(files.size() > 0){
+        if(files.length > 0 && CategoryList.valueOf(s).equals(CategoryList.PHOTO)){
             FileUpload fileUpload = new FileUpload();
             for (MultipartFile multipartFile : files) {
                 Image image = new Image();
                 Map<String, String> fileValue = fileUpload.Save(multipartFile);
                 image.setOriginal_url(fileValue.get("ABSOLUTE_PATH"));
                 image.setImage_url(fileValue.get("PATH"));
+                image.setFilename(multipartFile.getName());
                 image.addImageToBoard(board);
                 imageRepository.save(image);
             }
@@ -226,13 +227,25 @@ public class BoardController {
         }
     }
 
-    @GetMapping("/{board_id}/{member_id}/recommend")
+    @DeleteMapping("/delete")
+    public void deleteBoard(
+            @PathParam("id") Long id,
+            HttpServletResponse httpServletResponse
+    ) throws IOException {
+        System.out.println("id = " + id);
+        Optional<Board> findBoard = boardRepository.findById(id);
+        if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지않는 게시글입니다.");
+        Board board = findBoard.get();
+
+        boardRepository.delete(board);
+    }
+    @GetMapping("/{board_id}/recommend")
     public void recommend(
         @PathVariable("board_id") Long board_id,
-        @PathVariable("member_id") String member_id,
+        @RequestHeader("Authorization") String UID,
         HttpServletResponse httpServletResponse
     ) throws IOException {
-        MemberDetail member = memberService.LoginCheck(member_id, httpServletResponse);
+        MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
         Optional<Board> findBoard = boardRepository.findById(board_id);
         if(findBoard.isEmpty()){
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지 않는 게시글입니다.");
@@ -315,6 +328,13 @@ public class BoardController {
         return commentDTO;
     }
 
+    @PostMapping("/ckeditor/upload")
+    public boolean CKEditorImageUpload(
+           @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        if(file.getSize() > 52428800 ) return false;
+        return true;
+    }
     private Board boardInit(String title, String description, Category category1, MemberDetail member) {
         Board board = new Board();
         board.setTitle(title);

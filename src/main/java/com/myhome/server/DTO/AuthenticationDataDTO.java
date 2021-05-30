@@ -16,5 +16,6 @@ public class AuthenticationDataDTO {
     private String email;
     private MemberRank rank;
     private String avatar_url;
+    private String nickname;
 
 }

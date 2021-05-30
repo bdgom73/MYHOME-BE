@@ -15,7 +15,8 @@ public class Image {
     private String image_url;
     private String original_url;
     private Boolean state = true;
-    @ManyToOne
+    private String filename;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
 
@@ -38,5 +39,9 @@ public class Image {
 
     public void setState(Boolean state) {
         this.state = state;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 }

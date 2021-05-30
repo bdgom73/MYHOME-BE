@@ -56,6 +56,7 @@ public class BoardWriteDTO {
             imageDTO.setId(m.getId());
             imageDTO.setImage_url(m.getImage_url());
             imageDTO.setOriginal_url(m.getOriginal_url());
+            imageDTO.setFilename(m.getFilename());
             return imageDTO;
         }).collect(Collectors.toList());
         this.commentDTOList = board.getBoardCommentList().stream().map(m->{

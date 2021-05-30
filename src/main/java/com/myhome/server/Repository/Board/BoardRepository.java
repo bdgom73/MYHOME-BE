@@ -21,4 +21,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     Slice<Board> findPageByCategory(Category category, Pageable pageable);
 
+    Optional<Board> findByIdAndCategory(Long id, Category category);
+
 }

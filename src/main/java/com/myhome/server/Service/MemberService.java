@@ -104,6 +104,7 @@ public class MemberService {
         authData.setRank(member.getRank());
         authData.setAvatar_url(member.getAvatar_url());
         authData.setId(member.getId());
+        authData.setNickname(member.getNickname());
         return authData;
     }
 
