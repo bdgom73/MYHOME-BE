@@ -1,5 +1,6 @@
 package com.myhome.server.Entity.Board;
 
+import com.myhome.server.Entity.BaseEntity;
 import com.myhome.server.Entity.Member.Member;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter @Setter
-public class Calendar {
+public class Calendar extends BaseEntity {
 
     @Id @GeneratedValue
     @Column(name="calendar_id")

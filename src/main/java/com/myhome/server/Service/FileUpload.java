@@ -5,12 +5,9 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.List;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 
 @NoArgsConstructor
@@ -41,58 +38,32 @@ public class FileUpload {
         return null;
     }
 
-
-    public ByteArrayInputStream ImageFetch(String url){
-        Image image = new ImageIcon(url).getImage();
-
-        BufferedImage bi = new BufferedImage(image.getWidth(null),image.getHeight(null),BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = bi.createGraphics();
-        g2d.drawImage(image,0,0,null);
-        g2d.dispose();
-        ByteArrayOutputStream baos = null;
-        try{
-            baos = new ByteArrayOutputStream();
-            ImageIO.write(bi,"png",baos);
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            try{
-                baos.close();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        return bais;
-//        return Base64.encodeBase64(bais.readAllBytes());
+    public File multipartToFile(MultipartFile multipartFile) throws IOException {
+        File file = new File(multipartFile.getOriginalFilename());
+        multipartFile.transferTo(file);
+        return file;
     }
+    public String ImageToBase64(MultipartFile multipartFile) throws IOException {
 
-    public byte[] FileFetch(String url) throws IOException {
+        String originalFilename = multipartFile.getOriginalFilename();
+        String ext = originalFilename.split("[.]")[1];
         ByteArrayOutputStream baos = null;
-        //파일 객체 생성
-        File file = new File(url);
-        Path path = file.toPath();
-        try{
-            //입력 스트림 생성
-            FileReader file_reader = new FileReader(file);
-            int cur = 0;
+        InputStream inputStream = null;
+        ByteArrayInputStream  bais = null;
+        try {
+            String url = "data:image/"+ext+";base64, ";
             baos = new ByteArrayOutputStream();
-            while((cur = file_reader.read()) != -1){
-                baos.write((char) cur);
+            byte[] bytes = Base64.encodeBase64(multipartFile.getBytes(),false);
+            inputStream = new ByteArrayInputStream(bytes);
+            int len = 0 ;
+            while((len = inputStream.read(bytes)) != -1) {
+                baos.write(bytes, 0, len);
             }
-            file_reader.close();
-        } catch (IOException e) {
-            e.getStackTrace();
-        } finally {
-            try{
-                baos.close();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+           return url+baos.toString();
+        } catch (IOException e){
+            e.printStackTrace();
         }
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        byte[] bytes = Base64.encodeBase64(bais.readAllBytes());
-        return bytes;
+        return null;
     }
 
     public String RandomString(){
@@ -114,6 +85,46 @@ public class FileUpload {
                     temp.append((rnd.nextInt(10)));
                     break;
             }
+        }
+        return temp.toString();
+
+    }
+    public String RandomString(int len){
+        StringBuffer temp = new StringBuffer();
+        Random rnd = new Random();
+        for (int i = 0; i < len; i++) {
+            int rIndex = rnd.nextInt(3);
+            switch (rIndex) {
+                case 0:
+                    // a-z
+                    temp.append((char) ((int) (rnd.nextInt(26)) + 97));
+                    break;
+                case 1:
+                    // A-Z
+                    temp.append((char) ((int) (rnd.nextInt(26)) + 65));
+                    break;
+                case 2:
+                    // 0-9
+                    temp.append((rnd.nextInt(10)));
+                    break;
+            }
+        }
+        return temp.toString();
+
+    }
+    public String RandomNumberString(int len){
+        StringBuffer temp = new StringBuffer();
+        Random rnd = new Random();
+        for (int i = 0; i < len; i++) {
+            temp.append((rnd.nextInt(10)));
+        }
+        return temp.toString();
+    }
+    public String RandomNumberString(){
+        StringBuffer temp = new StringBuffer();
+        Random rnd = new Random();
+        for (int i = 0; i < 20; i++) {
+            temp.append((rnd.nextInt(10)));
         }
         return temp.toString();
 

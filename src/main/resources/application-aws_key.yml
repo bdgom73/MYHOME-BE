@@ -1,0 +1,5 @@
+cloud :
+  aws :
+    credentials:
+      accessKey: AKIARFOJQ5EGDLZJWZPV
+      secretKey: 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

@@ -13,4 +13,5 @@ public class MemberDetail extends Member{
     private String zipcode;
     private String address;
     private String detail_address;
+    private String self_introduction;
 }

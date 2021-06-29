@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Data
 @NoArgsConstructor
@@ -51,14 +52,15 @@ public class BoardWriteDTO {
         this.updated = board.getUpdated();
         this.views = board.getViews();
         this.recommend = board.getRecommendList().size();
-        this.imageList = board.getImageList().stream().map(m->{
-            ImageDTO imageDTO = new ImageDTO();
-            imageDTO.setId(m.getId());
-            imageDTO.setImage_url(m.getImage_url());
-            imageDTO.setOriginal_url(m.getOriginal_url());
-            imageDTO.setFilename(m.getFilename());
-            return imageDTO;
-        }).collect(Collectors.toList());
+        this.imageList = board.getImageList().stream().filter(m -> m.getState().equals(Boolean.TRUE))
+                .map(m->{
+                    ImageDTO imageDTO = new ImageDTO();
+                    imageDTO.setId(m.getId());
+                    imageDTO.setImage_url(m.getImage_url());
+                    imageDTO.setOriginal_url(m.getOriginal_url());
+                    imageDTO.setFilename(m.getFilename());
+                    return imageDTO;
+                }).collect(Collectors.toList());
         this.commentDTOList = board.getBoardCommentList().stream().map(m->{
             CommentDTO commentDTO = new CommentDTO();
             commentDTO.setBoard_id(m.getBoard().getId());

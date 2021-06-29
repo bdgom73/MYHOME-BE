@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 @RestController
-@RequestMapping("/calendar")
+@RequestMapping("/myApi/calendar")
 public class CalendarController {
 
     private final MemberDetailRepository memberDetailRepository;

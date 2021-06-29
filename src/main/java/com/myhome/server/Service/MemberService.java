@@ -3,8 +3,11 @@ package com.myhome.server.Service;
 import com.myhome.server.Crypt.Bcrypt;
 import com.myhome.server.DTO.AuthenticationDataDTO;
 import com.myhome.server.DTO.RegisterDTO;
+import com.myhome.server.Data.LoginLogData;
+import com.myhome.server.Entity.Log.LoginLog;
 import com.myhome.server.Entity.Member.MemberDetail;
 import com.myhome.server.Entity.Word.FilterText;
+import com.myhome.server.Repository.Log.LoginLogRepository;
 import com.myhome.server.Repository.Member.MemberDetailRepository;
 import com.myhome.server.Repository.Word.FilterTextRepository;
 import com.sun.jdi.request.DuplicateRequestException;
@@ -32,14 +35,15 @@ public class MemberService {
     private Bcrypt bcrypt;
     private BCryptPasswordEncoder pass = new BCryptPasswordEncoder();
     private FilterTextRepository filterTextRepository;
-
-    public MemberService(MemberDetailRepository memberDetailRepository, Bcrypt bcrypt, FilterTextRepository filterTextRepository) {
+    private final LoginLogRepository loginLogRepository;
+    public MemberService(MemberDetailRepository memberDetailRepository, Bcrypt bcrypt, FilterTextRepository filterTextRepository, LoginLogRepository loginLogRepository) {
         this.memberDetailRepository = memberDetailRepository;
         this.bcrypt = bcrypt;
         this.filterTextRepository = filterTextRepository;
+        this.loginLogRepository = loginLogRepository;
     }
 
-    public String Login(String email, String password) throws LoginException {
+    public String Login(String email, String password, LoginLogData loginLogData) throws LoginException {
         /* TODO
         *   존재하는 아이디인지 확인 후
         *  비밀번호 대조 후 로그인 리턴 */
@@ -53,10 +57,35 @@ public class MemberService {
             throw new LoginException("비밀번호가 틀립니다.");
         }
 
+
+        LoginLog log = new LoginLog();
+        log.setMember(member);
+        log.setLoginDate(LocalDateTime.now());
+        log.setCountryCode(loginLogData.getCountryCode());
+        log.setIp(loginLogData.getIp());
+        log.setIpv(loginLogData.getIpv());
+
+        loginLogRepository.save(log);
         return member.getSESSION_UID();
 
     }
+    public String Login(String email, String password) throws LoginException {
+        /* TODO
+         *   존재하는 아이디인지 확인 후
+         *  비밀번호 대조 후 로그인 리턴 */
+        Optional<MemberDetail> findMember = memberDetailRepository.findByEmail(email);
+        if(findMember.isEmpty()){
+            throw new LoginException("존재하지 않는 계정입니다.");
+        }
+        MemberDetail member = findMember.get();;
+        String pw = member.getPassword();
+        if(!bcrypt.matchesPassword(password,pw)){
+            throw new LoginException("비밀번호가 틀립니다.");
+        }
 
+
+        return member.getSESSION_UID();
+    }
     public void SignUp(RegisterDTO registerDTO) throws Exception {
         /* TODO
         *   회원가입정보 중 아이디 중복검사.
@@ -68,6 +97,11 @@ public class MemberService {
 
         if(!registerDTO.getPassword().equals(registerDTO.getPassword2())){
             throw new Exception("비밀번호가 서로 다릅니다.");
+        }
+        String pwPattern = "/^[a-zA-Z0-9\\d~!@#$%^&*]{10,}$/";
+        Matcher matcher = Pattern.compile(pwPattern).matcher(registerDTO.getPassword());
+        if(!matcher.matches()){
+            throw new Exception("비밀번호는 영문,숫자, 특수문자(필1)로 이루어진 10자 이상으로 설정가능합니다.");
         }
 
         DuplicateNickName(registerDTO.getNickname());
@@ -98,20 +132,15 @@ public class MemberService {
             throw new AuthenticationException("올바르지 않은 형식의 토큰입니다.");
         }
         MemberDetail member = findMember.get();
-        AuthenticationDataDTO authData = new AuthenticationDataDTO();
-        authData.setName(member.getName());
-        authData.setEmail(member.getEmail());
-        authData.setRank(member.getRank());
-        authData.setAvatar_url(member.getAvatar_url());
-        authData.setId(member.getId());
-        authData.setNickname(member.getNickname());
-        return authData;
+
+        return new AuthenticationDataDTO(member);
     }
 
-    public MemberDetail LoginCheck(String UID, HttpServletResponse httpServletResponse) throws IOException {
+    public MemberDetail LoginCheck(String UID, HttpServletResponse httpServletResponse) throws Exception {
         Optional<MemberDetail> findMember = memberDetailRepository.findBySessionUID(UID);
         if(findMember.isEmpty()){
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,"존재하지 않는 회원입니다.");
+            throw new Exception("존재하지 않는 회원입니다.");
         }
         MemberDetail member = findMember.get();
         return member;

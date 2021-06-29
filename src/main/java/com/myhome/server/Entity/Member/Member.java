@@ -1,10 +1,14 @@
 package com.myhome.server.Entity.Member;
 
+import com.myhome.server.Entity.Board.Board;
+import com.myhome.server.Entity.Chat.JoinRoom;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter @NoArgsConstructor
@@ -30,6 +34,24 @@ public class Member {
 
     @Column(name = "sessionUID")
     private String SESSION_UID;
+
+    @OneToMany(mappedBy = "member")
+    private List<Board> BoardList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    private List<JoinRoom> JoinRoomList = new ArrayList<>();
+
+    public void setJoinRoomList(List<JoinRoom> joinRoomList) {
+        JoinRoomList = joinRoomList;
+    }
+
+    public List<Board> getBoardList() {
+        return BoardList;
+    }
+
+    public void setBoardList(List<Board> boardList) {
+        BoardList = boardList;
+    }
 
     public void setName(String name) {
         this.name = name;

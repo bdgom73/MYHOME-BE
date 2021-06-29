@@ -19,7 +19,6 @@ public class Bcrypt {
     }
 
     public String createSessionUid(Long id){
-
         return pass.encode(id.toString());
     }
 

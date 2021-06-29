@@ -1,5 +1,6 @@
 package com.myhome.server.Entity.Board;
 
+import com.myhome.server.Entity.BaseEntity;
 import com.myhome.server.Entity.Comment.BoardComment;
 import com.myhome.server.Entity.Member.Member;
 import lombok.Getter;
@@ -22,12 +23,17 @@ public class Board {
     @Column(columnDefinition = "Text")
     private String description;
     private int views;
+
+    private Boolean notice = false;
+
     private LocalDateTime created;
     private LocalDateTime updated;
 
     private String video_url;
     private String original_url;
     private String video_thumbnail;
+
+    private String keywords ;
 
     @Enumerated(EnumType.STRING)
     private VideoType videoType = VideoType.NONE;
@@ -48,4 +54,9 @@ public class Board {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
     private List<BoardComment> boardCommentList = new ArrayList<>();
+
+    public void addMember(Member member){
+        this.member = member;
+        member.getBoardList().add(this);
+    }
 }
