@@ -103,7 +103,7 @@ public class BoardController2 {
 
             return value.getId();
         }else if(s.equals(CategoryList.PHOTO.toString())){
-            FileResult result_url = awsS3Upload.upload(videoFile, "/static/board/image");
+            FileResult result_url = awsS3Upload.upload(videoFile, "static/board/image");
             Board board = boardInit(title, description, category1, member, keywordString.toString());
             Board boardSave = boardRepository.save(board);
             for (MultipartFile multipartFile : files) {
@@ -117,7 +117,7 @@ public class BoardController2 {
             }
             return boardSave.getId();
         }else if(s.equals(CategoryList.VIDEO.toString())){
-            FileResult result_url = awsS3Upload.upload(videoFile, "/static/board/video");
+            FileResult result_url = awsS3Upload.upload(videoFile, "static/board/video");
             Board board = boardInit(title, description, category1, member,keywordString.toString());
             if(video_url != null){
                 switch (category_type) {
@@ -259,7 +259,7 @@ public class BoardController2 {
         if(findBoard.isEmpty()) httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,"존재하지않는 게시글입니다.");
         Board board = findBoard.get();
         if(videoFile != null && video_url == null && CategoryList.valueOf(s).equals(CategoryList.VIDEO)){
-            FileResult result_url = awsS3Upload.upload(videoFile, "/static/board/video");
+            FileResult result_url = awsS3Upload.upload(videoFile, "static/board/video");
             board.setVideoType(VideoType.LOCAL);
             board.setVideo_url(result_url.getUrl());
             board.setOriginal_url(result_url.getUrl());
@@ -307,7 +307,7 @@ public class BoardController2 {
         try{
             if(files != null && CategoryList.valueOf(s).equals(CategoryList.PHOTO)){
                 for (MultipartFile multipartFile : files) {
-                    FileResult result_url = awsS3Upload.upload(multipartFile, "/static/board/image");
+                    FileResult result_url = awsS3Upload.upload(multipartFile, "static/board/image");
                     Image image = new Image();
                     image.setOriginal_url(result_url.getUrl());
                     image.setImage_url(result_url.getUrl());

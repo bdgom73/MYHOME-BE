@@ -246,7 +246,7 @@ public class MemberController {
             HttpServletResponse httpServletResponse
     ) throws Exception {
         MemberDetail member = memberService.LoginCheck(UID, httpServletResponse);
-        FileResult result = aws_s3Upload.upload(avatar, "/static/avatar");
+        FileResult result = aws_s3Upload.upload(avatar, "static/avatar");
 
         member.setAvatar_url(result.getUrl());
 
