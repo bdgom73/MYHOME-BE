@@ -1,8 +1,8 @@
 spring :
   datasource:
-    url: jdbc:mysql://52.79.66.187:3306/myhome?characterEncoding=utf8
+    url: jdbc:mysql://13.209.94.31:3306/myhome?characterEncoding=utf8
     username: bdgom97
-    password: thdus0205
+    password: dlf123
     driver-class-name: com.mysql.cj.jdbc.Driver
   # 개발용 h2 db
 #  datasource:
