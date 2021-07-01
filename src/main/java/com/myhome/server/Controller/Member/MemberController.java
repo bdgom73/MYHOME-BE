@@ -72,7 +72,7 @@ public class MemberController {
         try{
             memberService.SignUp(registerDTO);
         } catch (Exception e){
-            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "로그인에 실패했습니다.");
         }
     }
 
