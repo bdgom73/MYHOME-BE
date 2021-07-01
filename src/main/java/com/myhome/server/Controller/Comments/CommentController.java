@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/myApi/comments")
 public class CommentController {
 

@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/myApi/bbs")
 public class BoardController {
 

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/myApi")
 public class MailController {
 

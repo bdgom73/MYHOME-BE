@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/myApi/calendar")
 public class CalendarController {
 
