@@ -9,17 +9,17 @@ import java.time.LocalDateTime;
 public class RoomMessage {
 
     @Id @GeneratedValue
-    @Column(name = "room_message_id")
+    @Column(name = "room_message_id",length = 255)
     private Long id;
 
     private String content;
 
     private LocalDateTime created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Room room;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Member member;
 
 }

@@ -3,7 +3,7 @@ spring :
     url: jdbc:mysql://13.209.94.31:3306/myhome?characterEncoding=utf8
     username: bdgom97
     password: dlf123
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driverClassName: com.mysql.cj.jdbc.Driver
   # 개발용 h2 db
 #  datasource:
 #    url: jdbc:h2:tcp://localhost/~/test

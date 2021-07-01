@@ -17,17 +17,17 @@ public class BoardComment {
     @Column(name = "comment_id")
     private Long id;
 
-    @Column(columnDefinition = "Text")
+    @Column(columnDefinition = "Text",length = 255)
     private String description;
 
     private LocalDateTime created;
     private LocalDateTime updated;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "board_id")
     private Board board;
 

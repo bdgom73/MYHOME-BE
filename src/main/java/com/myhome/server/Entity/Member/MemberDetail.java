@@ -5,10 +5,9 @@ import lombok.Setter;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+
 
 @Entity
-@Table(name = "_Member")
 @DiscriminatorValue("address")
 @Getter @Setter
 public class MemberDetail extends Member{

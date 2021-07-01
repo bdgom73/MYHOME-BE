@@ -16,7 +16,7 @@ public class Image {
     private String original_url;
     private Boolean state = true;
     private String filename;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "board_id")
     private Board board;
 

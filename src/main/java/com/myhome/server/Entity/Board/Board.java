@@ -17,10 +17,10 @@ import java.util.List;
 public class Board {
 
     @Id
-    @GeneratedValue @Column(name = "board_id")
+    @GeneratedValue @Column(name = "board_id",length = 255)
     private Long id;
     private String title;
-    @Column(columnDefinition = "Text")
+    @Column(columnDefinition = "Text",length = 255)
     private String description;
     private int views;
 
@@ -38,21 +38,21 @@ public class Board {
     @Enumerated(EnumType.STRING)
     private VideoType videoType = VideoType.NONE;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Image> imageList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "board")
     private List<Recommend> recommendList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "board")
     private List<BoardComment> boardCommentList = new ArrayList<>();
 
     public void addMember(Member member){

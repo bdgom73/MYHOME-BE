@@ -9,7 +9,7 @@ import javax.persistence.Id;
 public class FilterText {
 
     @Id @GeneratedValue
-    @Column(name = "filter_id")
+    @Column(name = "filter_id",length = 255)
     private Long id;
     private String text;
     private String kinds;

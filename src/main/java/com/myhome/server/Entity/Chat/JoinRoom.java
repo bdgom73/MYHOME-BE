@@ -14,14 +14,14 @@ public class JoinRoom {
 
     @Id
     @GeneratedValue
-    @Column(name = "join_room_id")
+    @Column(name = "join_room_id",length = 255)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "room_id")
     private Room room;
 

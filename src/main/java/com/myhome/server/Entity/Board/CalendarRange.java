@@ -15,14 +15,14 @@ public class CalendarRange {
     @Column(name = "calendar_range_id")
     private Long id;
 
-    @Column(name = "start_date")
+    @Column(name = "start_date",length = 255)
     private LocalDate start_date;
-    @Column(name = "end_date")
+    @Column(name = "end_date",length = 255)
     private LocalDate end_date;
     private String title;
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="member_id")
     private Member member;
 }

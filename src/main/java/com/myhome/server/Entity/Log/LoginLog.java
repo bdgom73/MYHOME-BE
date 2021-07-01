@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter @Setter
 public class LoginLog {
 
-    @Column(name = "login_log_id")
+    @Column(name = "login_log_id",length = 255)
     @Id @GeneratedValue
     private Long id;
 
@@ -20,7 +20,7 @@ public class LoginLog {
     private String countryCode;
     private String ipv;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
 }

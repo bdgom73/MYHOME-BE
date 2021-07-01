@@ -16,13 +16,13 @@ import java.util.List;
 public class Room {
 
     @Id @GeneratedValue
-    @Column(name = "room_id")
+    @Column(name = "room_id",length = 255)
     private Long id;
     private String title;
     private LocalDateTime created;
     private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Member leader;
     private RoomType type;
 

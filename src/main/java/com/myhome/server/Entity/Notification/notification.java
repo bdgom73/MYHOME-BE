@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class notification {
 
     @Id @GeneratedValue
-    @Column(name = "notification_id")
+    @Column(name = "notification_id",length = 255)
     private Long id;
 
     private NotificationType noti_type;
@@ -23,12 +23,12 @@ public class notification {
     private LocalDateTime created;
     private LocalDateTime read_date;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Member recipient;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Member sender;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Board board;
 }
