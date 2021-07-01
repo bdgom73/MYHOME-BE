@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/myApi")
 public class MailController {
 

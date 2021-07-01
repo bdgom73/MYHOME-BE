@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/myApi/calendar")
 public class CalendarController {
 
