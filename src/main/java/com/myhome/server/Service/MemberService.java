@@ -98,7 +98,7 @@ public class MemberService {
         if(!registerDTO.getPassword().equals(registerDTO.getPassword2())){
             throw new Exception("비밀번호가 서로 다릅니다.");
         }
-        String pwPattern = "/^[a-zA-Z0-9\\d~!@#$%^&*]{10,}$/";
+        String pwPattern = "^[a-zA-Z0-9\\d~!@#$%^&*]{10,}$";
         Matcher matcher = Pattern.compile(pwPattern).matcher(registerDTO.getPassword());
         if(!matcher.matches()){
             throw new Exception("비밀번호는 영문,숫자, 특수문자(필1)로 이루어진 10자 이상으로 설정가능합니다.");
