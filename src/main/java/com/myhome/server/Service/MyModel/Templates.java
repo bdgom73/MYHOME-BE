@@ -4,7 +4,8 @@ import lombok.Getter;
 
 public class Templates {
 
-    public String BASIC_URL = "http://localhost:8080";
+    public String BASIC_URL = "http://13.209.94.31";
+//            "http://localhost:8080";
     public String MEMBER_REGISTRATION_AUTHENTICATION
             = BASIC_URL+"/registerAuthMail.html";
 
