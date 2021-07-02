@@ -184,8 +184,11 @@ public class BoardController2 {
                 return findViews.map(BoardWriteDTO::new).getContent();
             case "recommend" :
                 List<Board> all = boardRepository.findAll();
-                all.sort((o1, o2) -> o2.getRecommendList().size() - o1.getRecommendList().size());
-                List<Board> boards = all.subList(0, 10);
+                List<Board> boards = new ArrayList<>();
+                if(all.size() != 0){
+                    all.sort((o1, o2) -> o2.getRecommendList().size() - o1.getRecommendList().size());
+                    all.subList(0, 10);
+                }
                 return boards.stream().map(BoardWriteDTO::new);
             default:
                 PageRequest pageRequest4 = PageRequest.of(0, 10, Sort.by("id").descending());
