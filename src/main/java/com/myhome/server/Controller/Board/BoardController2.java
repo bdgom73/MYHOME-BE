@@ -104,10 +104,11 @@ public class BoardController2 {
 
             return value.getId();
         }else if(s.equals(CategoryList.PHOTO.toString())){
-            FileResult result_url = awsS3Upload.upload(videoFile, "static/board/image");
+
             Board board = boardInit(title, description, category1, member, keywordString.toString());
             Board boardSave = boardRepository.save(board);
             for (MultipartFile multipartFile : files) {
+                FileResult result_url = awsS3Upload.upload(multipartFile, "static/board/image");
                 Image image = new Image();
                 image.setOriginal_url(result_url.getUrl());
                 image.setImage_url(result_url.getUrl());
