@@ -33,13 +33,6 @@ public class AWS_S3Upload {
 
         return upload(uploadFile, dirName);
     }
-    public FileResult uploadTest(File multipartFile, String dirName) throws IOException {
-//        File uploadFile = convert(multipartFile)
-//                .orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File로 전환이 실패했습니다."));
-
-        return upload(multipartFile, dirName);
-    }
-
 
 
     // upload 이미지 url 리턴
