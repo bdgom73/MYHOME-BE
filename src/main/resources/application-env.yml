@@ -1,4 +1,4 @@
 env :
   aws :
-    ACCESS_KEY : AKIARFOJQ5EGDLZJWZPV
-    SECRET_KEY : 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
+    ACCESS_KEY : access key
+    SECRET_KEY : secret key
